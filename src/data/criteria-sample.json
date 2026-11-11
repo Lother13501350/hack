@@ -1,0 +1,38 @@
+{
+  "ceo": { "name": "Dana Whitfield", "company": "Summit Aerostructures" },
+  "notes": "Call with Dana, 20 min. She wants to grow by buying machine shops like ours and running them together - bigger volume, cheaper material buys, sell our assemblies to their customers. Precision CNC machining, tight-tolerance metal parts. Has to be close enough to drive to: Ohio, Indiana or Michigan. Size: roughly $10M to $30M in revenue, anything smaller is not worth the effort. Must already hold AS9100 or at least ISO 9001, we cannot wait a year for certification. Only founder or family owned, she does not want to bid against or buy from private equity. Would love it if they already sell to aerospace or defense, and if they have 5-axis machines. Best case is an owner near retirement with nobody to hand it to. On money: keep at least $1.5M cash in the bank, no more than 3x debt to EBITDA after the deal, we already carry $9M of debt.",
+  "expected": {
+    "criteria": {
+      "reason": "buy_and_build",
+      "industry": "Precision CNC machining of tight-tolerance metal parts",
+      "regions": ["Ohio", "Indiana", "Michigan"],
+      "revenueMinM": 10,
+      "revenueMaxM": 30,
+      "ownership": "Founder- or family-owned",
+      "mustHaves": [
+        "Precision CNC machining of tight-tolerance metal parts",
+        "Located in Ohio, Indiana or Michigan",
+        "Revenue between $10M and $30M",
+        "AS9100 or ISO 9001 certified today",
+        "Founder- or family-owned, no private equity owner"
+      ],
+      "niceToHaves": [
+        "Already sells to aerospace or defense customers",
+        "Has 5-axis machining capability",
+        "Owner near retirement with no successor"
+      ],
+      "financialLimits": {
+        "minCashM": 1.5,
+        "maxDebtToEbitda": 3.0,
+        "existingDebtM": 9.0
+      },
+      "ceoAnswers": [],
+      "status": "draft"
+    },
+    "forgottenQuestions": [
+      "Should the owner stay on after the sale to hand over customers, and for how long?",
+      "How much revenue from a single customer is acceptable before you would pass?",
+      "Do you want to keep the acquired company's brand or fold it into Summit?"
+    ]
+  }
+}

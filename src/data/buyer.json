@@ -1,0 +1,8 @@
+{
+  "name": "Summit Aerostructures",
+  "ebitdaM": 6.0,
+  "cashM": 4.0,
+  "existingDebtM": 9.0,
+  "minCashM": 1.5,
+  "maxDebtToEbitda": 3.0
+}
