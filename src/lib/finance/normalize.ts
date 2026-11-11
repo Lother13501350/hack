@@ -1,5 +1,5 @@
 import type { Adjustment, BridgeItem } from "@/types/deal";
-import { round2 } from "./format";
+import { round4 } from "./format";
 
 /** Signed effect of an adjustment on EBITDA. `amountM` itself is always positive. */
 export function signedDeltaM(adjustment: Adjustment): number {
@@ -15,6 +15,7 @@ export function signedDeltaM(adjustment: Adjustment): number {
  *   - related-party rent below market
  *   + one-time expenses
  */
+/** Amounts are kept to $100 (four decimals in $M) so small companies are not distorted. */
 export function normalizeEbitda(
   reportedEbitdaM: number,
   adjustments: Adjustment[],
@@ -26,7 +27,7 @@ export function normalizeEbitda(
       id: "reported",
       label: "Reported EBITDA",
       deltaM: 0,
-      runningM: round2(running),
+      runningM: round4(running),
       kind: "start",
       source: reportedSource,
     },
@@ -37,13 +38,13 @@ export function normalizeEbitda(
     bridge.push({
       id: adjustment.id,
       label: adjustment.label,
-      deltaM: round2(delta),
-      runningM: round2(running),
+      deltaM: round4(delta),
+      runningM: round4(running),
       kind: "adjustment",
       source: adjustment.source,
     });
   }
-  const normalizedEbitdaM = round2(running);
+  const normalizedEbitdaM = round4(running);
   bridge.push({
     id: "normalized",
     label: "Normalized EBITDA",

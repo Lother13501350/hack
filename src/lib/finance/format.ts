@@ -7,7 +7,12 @@ export function round2(x: number): number {
   return Math.round(x * 100 + nudge(x)) / 100;
 }
 
-/** Ratios are carried at four decimals (0.3785). */
+/** Ratios carried at six decimals, so display rounding happens only once. */
+export function round6(x: number): number {
+  return Math.round(x * 1_000_000 + nudge(x)) / 1_000_000;
+}
+
+/** Four decimals, for amounts in $M that need $100 precision. */
 export function round4(x: number): number {
   return Math.round(x * 10_000 + nudge(x)) / 10_000;
 }

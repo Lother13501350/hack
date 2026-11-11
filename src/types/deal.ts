@@ -162,7 +162,8 @@ export const FinancialsSchema = z.object({
   grossProfitM: z.number(),
   ebitdaReportedM: z.number(),
   accountsReceivableM: z.number().nonnegative(),
-  topCustomerRevenueM: z.number().nonnegative(),
+  /** null when the filing only says no customer passes a disclosure threshold. */
+  topCustomerRevenueM: z.number().nonnegative().nullable(),
   cashM: z.number(),
   debtM: z.number().nonnegative(),
 });
@@ -314,7 +315,8 @@ export type Financing = z.infer<typeof FinancingSchema>;
 export const DealMetricsSchema = z.object({
   fromYear: z.number(),
   toYear: z.number(),
-  customerConcentration: z.number(),
+  /** null when the largest customer's revenue is not disclosed. */
+  customerConcentration: z.number().nullable(),
   dsoStartDays: z.number(),
   dsoEndDays: z.number(),
   grossMarginStart: z.number(),

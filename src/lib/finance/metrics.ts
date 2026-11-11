@@ -1,7 +1,8 @@
 import type { DealMetrics, Financials } from "@/types/deal";
-import { round2, round4 } from "./format";
+import { round2, round6 } from "./format";
 
-export function customerConcentration(year: Financials): number {
+export function customerConcentration(year: Financials): number | null {
+  if (year.topCustomerRevenueM === null) return null;
   return year.topCustomerRevenueM / year.revenueM;
 }
 
@@ -31,14 +32,16 @@ export function firstAndLast(financials: Financials[]): {
 
 export function computeMetrics(financials: Financials[]): DealMetrics {
   const { first, last } = firstAndLast(financials);
+  const concentration = customerConcentration(last);
   return {
     fromYear: first.fiscalYear,
     toYear: last.fiscalYear,
-    customerConcentration: round4(customerConcentration(last)),
+    customerConcentration:
+      concentration === null ? null : round6(concentration),
     dsoStartDays: round2(dsoDays(first)),
     dsoEndDays: round2(dsoDays(last)),
-    grossMarginStart: round4(grossMargin(first)),
-    grossMarginEnd: round4(grossMargin(last)),
-    revenueCagr: round4(revenueCagr(first, last)),
+    grossMarginStart: round6(grossMargin(first)),
+    grossMarginEnd: round6(grossMargin(last)),
+    revenueCagr: round6(revenueCagr(first, last)),
   };
 }
