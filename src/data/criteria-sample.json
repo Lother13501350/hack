@@ -1,0 +1,55 @@
+{
+  "ceo": {
+    "name": "Maria Reyes",
+    "title": "CEO",
+    "company": "Summit Aerostructures",
+    "city": "Columbus",
+    "email": "maria.reyes@summitaero.example"
+  },
+  "analyst": { "name": "J. Lin", "title": "Finance Analyst" },
+  "notes": "Maria wants to grow in aerospace parts by buying a competitor. Prefers a family-owned CNC shop in Ohio, Michigan or Indiana, roughly $10–40M revenue. Owner close to retirement would be ideal. No PE-backed companies. Wants to keep their team.",
+  "expected": {
+    "criteria": {
+      "reason": "competitor",
+      "industry": "CNC machining for aerospace (AS9100 certified)",
+      "regions": ["Ohio", "Michigan", "Indiana"],
+      "revenueMinM": 10,
+      "revenueMaxM": 40,
+      "ownership": "Family-owned, no private equity",
+      "mustHaves": [
+        { "label": "Reason", "value": "Acquire a competitor" },
+        {
+          "label": "Capability",
+          "value": "CNC machining for aerospace (AS9100 certified)"
+        },
+        { "label": "Region", "value": "Ohio, Michigan, Indiana" },
+        { "label": "Size", "value": "Revenue $10–40M (estimated)" },
+        { "label": "Ownership", "value": "Family-owned, no private equity" }
+      ],
+      "niceToHaves": [
+        {
+          "label": "Owner situation",
+          "value": "Near retirement, no named successor"
+        },
+        { "label": "Team", "value": "Experienced staff willing to stay" }
+      ],
+      "financialLimits": {
+        "minCashM": 1.5,
+        "maxDebtToEbitda": 3.0,
+        "existingDebtM": 9.0
+      },
+      "ceoAnswers": [],
+      "status": "draft"
+    },
+    "forgottenQuestions": [
+      "Must the owner stay after the sale? For how long?",
+      "Is one customer above 30% of revenue a deal-breaker?",
+      "Do we keep their brand, or merge it into ours?"
+    ],
+    "sampleAnswers": [
+      "Yes, 12 months to hand over customers",
+      "No, but it lowers the price",
+      "Keep it for 2 years"
+    ]
+  }
+}

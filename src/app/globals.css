@@ -48,6 +48,24 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* DealBrief palette, taken from the UI design (issue #12). */
+@theme {
+  --color-db-bg: #f5f5f1;
+  --color-db-ink: #17181c;
+  --color-db-muted: #666a72;
+  --color-db-line: #e3e3dd;
+  --color-db-track: #efefea;
+  --color-db-blue: #1f4fd8;
+  --color-db-blue-ink: #1e3fae;
+  --color-db-blue-soft: #e6ebfa;
+  --color-db-orange: #c2410c;
+  --color-db-orange-soft: #fdeadc;
+  --color-db-amber: #8a5a00;
+  --color-db-amber-soft: #fbf0cc;
+  --color-db-green: #166534;
+  --color-db-green-soft: #dcf5e3;
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

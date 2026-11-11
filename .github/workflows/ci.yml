@@ -1,8 +1,10 @@
 name: CI
+# Manual only for now: GitHub is not starting Actions jobs for this account
+# (billing), so automatic runs just mark every PR as failed.
+# To restore, replace the trigger with: pull_request + push to main.
+# Until then, run `pnpm check` and `pnpm build` locally before merging.
 on:
-  pull_request:
-  push:
-    branches: [main]
+  workflow_dispatch:
 jobs:
   check:
     runs-on: ubuntu-latest

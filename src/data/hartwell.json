@@ -1,0 +1,78 @@
+{
+  "name": "Hartwell Precision Components",
+  "location": "Dayton, OH",
+  "descriptor": "Precision machining · Ohio, US",
+  "askingPriceM": 16.5,
+  "sourceFile": "Hartwell_FY23-25.xlsx",
+  "fieldSources": {
+    "revenueM": "P&L › line 3",
+    "grossProfitM": "P&L › lines 3–5",
+    "ebitdaReportedM": "P&L › EBITDA",
+    "accountsReceivableM": "Balance sheet › AR, FY23 vs FY25",
+    "topCustomerRevenueM": "Hartwell_FY23-25.xlsx › Customers!C4",
+    "cashM": "Balance sheet › Cash",
+    "debtM": "Balance sheet › Borrowings"
+  },
+  "financials": [
+    {
+      "fiscalYear": 2023,
+      "revenueM": 18.2,
+      "grossProfitM": 5.73,
+      "ebitdaReportedM": 2.62,
+      "accountsReceivableM": 2.59,
+      "topCustomerRevenueM": 5.6,
+      "cashM": 1.1,
+      "debtM": 2.4
+    },
+    {
+      "fiscalYear": 2025,
+      "revenueM": 21.4,
+      "grossProfitM": 6.18,
+      "ebitdaReportedM": 3.1,
+      "accountsReceivableM": 4.16,
+      "topCustomerRevenueM": 8.1,
+      "cashM": 1.4,
+      "debtM": 2.1
+    }
+  ],
+  "adjustments": [
+    {
+      "id": "tooling",
+      "label": "One-time tooling revenue",
+      "amountM": 0.4,
+      "type": "remove_revenue",
+      "category": "one_time_revenue",
+      "source": "P&L › Other revenue",
+      "note": "Tooling orders tagged non-recurring"
+    },
+    {
+      "id": "owner_pay",
+      "label": "Owner paid below market",
+      "amountM": 0.25,
+      "type": "add_cost",
+      "category": "owner_compensation",
+      "source": "P&L › Salaries; market estimate entered by analyst",
+      "actualM": 0.15,
+      "marketM": 0.4
+    },
+    {
+      "id": "rent",
+      "label": "Rent from owner below market",
+      "amountM": 0.15,
+      "type": "add_cost",
+      "category": "related_party_rent",
+      "source": "Lease schedule; market rent entered by analyst",
+      "actualM": 0.2,
+      "marketM": 0.35
+    },
+    {
+      "id": "legal",
+      "label": "One-time legal settlement",
+      "amountM": 0.1,
+      "type": "add_back",
+      "category": "one_time_expense",
+      "source": "P&L › Legal and professional",
+      "note": "Settlement paid in FY25; not expected to recur"
+    }
+  ]
+}

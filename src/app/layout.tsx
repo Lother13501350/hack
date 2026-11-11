@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hackathon",
-  description: "Hackathon project",
+  title: "DealBrief",
+  description:
+    "From a CEO conversation to a walk-away price: acquisition criteria, target search, outreach and deal review.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

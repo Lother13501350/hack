@@ -1,0 +1,217 @@
+{
+  "source": "fixture",
+  "queries": [
+    "AS9100 CNC machining aerospace Ohio family owned",
+    "5-axis aerospace machine shop Michigan founder owned",
+    "aerospace precision machining Indiana privately held",
+    "CNC aerospace parts manufacturer Ohio owner retiring"
+  ],
+  "funnel": {
+    "searchResults": 214,
+    "companiesIdentified": 41,
+    "passedMustHaves": 12,
+    "shortlisted": 5
+  },
+  "candidates": [
+    {
+      "id": "hartwell",
+      "name": "Hartwell Precision Components",
+      "location": "Dayton, OH",
+      "estRevenueRangeM": { "lowM": 20, "highM": 25 },
+      "revenueIsEstimate": true,
+      "fitScore": 92,
+      "analystRecommendation": "recommend",
+      "contact": {
+        "name": "Robert Hartwell",
+        "role": "Founder",
+        "email": "robert@hartwell-precision.example"
+      },
+      "snapshot": {
+        "what": "5-axis CNC parts for aerospace engines and landing gear; AS9100 certified.",
+        "ownership": "Founder-owned since 1988. Founder is 67; a local profile says no family member plans to take over.",
+        "whyFits": "Same capability and certification as us; customers overlap in aerospace.",
+        "watchOut": "One large customer appears in most of its case studies, so revenue may be concentrated."
+      },
+      "evidence": [
+        {
+          "kind": "FIT",
+          "text": "Makes 5-axis CNC parts for aerospace engines and landing gear; AS9100 certified.",
+          "sourceUrl": "https://hartwell-precision.example/capabilities",
+          "sourceLabel": "Company website"
+        },
+        {
+          "kind": "FIT",
+          "text": "Founder-owned and based in Dayton since 1988.",
+          "sourceUrl": "https://ohio-business-registry.example/entities/hartwell-precision-components",
+          "sourceLabel": "Business registry"
+        },
+        {
+          "kind": "FIT",
+          "text": "Founder Robert Hartwell is 67 and says no family member plans to take over.",
+          "sourceUrl": "https://dayton-business-news.example/2026/robert-hartwell-profile",
+          "sourceLabel": "Local news (2026)"
+        },
+        {
+          "kind": "RISK",
+          "text": "One large customer appears in most of its published case studies.",
+          "sourceUrl": "https://hartwell-precision.example/case-studies",
+          "sourceLabel": "Company website"
+        }
+      ]
+    },
+    {
+      "id": "lakeline",
+      "name": "Lakeline Machining",
+      "location": "Grand Rapids, MI",
+      "estRevenueRangeM": { "lowM": 15, "highM": 20 },
+      "revenueIsEstimate": true,
+      "fitScore": 85,
+      "analystRecommendation": "recommend",
+      "contact": {
+        "name": "Anna Lindqvist",
+        "role": "President",
+        "email": "anna@lakeline-machining.example"
+      },
+      "snapshot": {
+        "what": "Precision-machined housings and manifolds for aerospace actuation systems; AS9100 certified.",
+        "ownership": "Family-owned since 1994; the second generation runs it day to day.",
+        "whyFits": "Meets every must-have, and its experienced team has low turnover.",
+        "watchOut": "The owner is not near retirement, so there is no clear reason to sell."
+      },
+      "evidence": [
+        {
+          "kind": "FIT",
+          "text": "Family-owned since the Grand Rapids plant opened in 1994.",
+          "sourceUrl": "https://lakeline-machining.example/about",
+          "sourceLabel": "Company website"
+        },
+        {
+          "kind": "FIT",
+          "text": "Machines housings and manifolds for aerospace actuation systems; AS9100 certified.",
+          "sourceUrl": "https://lakeline-machining.example/capabilities",
+          "sourceLabel": "Company website"
+        },
+        {
+          "kind": "FIT",
+          "text": "Average employee tenure is reported as 11 years.",
+          "sourceUrl": "https://west-michigan-manufacturing.example/2026/lakeline-profile",
+          "sourceLabel": "Local news (2026)"
+        },
+        {
+          "kind": "RISK",
+          "text": "Anna Lindqvist became president in 2021.",
+          "sourceUrl": "https://michigan-business-registry.example/entities/lakeline-machining",
+          "sourceLabel": "Business registry"
+        }
+      ]
+    },
+    {
+      "id": "brennan",
+      "name": "Brennan Tool Works",
+      "location": "Fort Wayne, IN",
+      "estRevenueRangeM": { "lowM": 30, "highM": 40 },
+      "revenueIsEstimate": true,
+      "fitScore": 71,
+      "analystRecommendation": "skip",
+      "contact": {
+        "name": "Tom Brennan",
+        "role": "Owner",
+        "email": "tom@brennan-toolworks.example"
+      },
+      "snapshot": {
+        "what": "CNC tooling and machined parts, mostly for automotive; a small aerospace line.",
+        "ownership": "Family-owned, third generation.",
+        "whyFits": "Right region and ownership, at the top of the size range.",
+        "watchOut": "Aerospace is a minor part of its work and its AS9100 scope covers one cell only."
+      },
+      "evidence": [
+        {
+          "kind": "FIT",
+          "text": "Third-generation family company in Fort Wayne.",
+          "sourceUrl": "https://brennan-toolworks.example/our-story",
+          "sourceLabel": "Company website"
+        },
+        {
+          "kind": "RISK",
+          "text": "AS9100 certificate scope is limited to one machining cell.",
+          "sourceUrl": "https://brennan-toolworks.example/quality",
+          "sourceLabel": "Company website"
+        },
+        {
+          "kind": "RISK",
+          "text": "Describes automotive tooling as its main business.",
+          "sourceUrl": "https://indiana-business-registry.example/entities/brennan-tool-works",
+          "sourceLabel": "Business registry"
+        }
+      ]
+    },
+    {
+      "id": "corliss",
+      "name": "Corliss Fabrication",
+      "location": "Toledo, OH",
+      "estRevenueRangeM": { "lowM": 8, "highM": 10 },
+      "revenueIsEstimate": true,
+      "fitScore": 58,
+      "analystRecommendation": "skip",
+      "contact": {
+        "name": "Office of the President",
+        "role": "General inquiries",
+        "email": "info@corliss-fabrication.example"
+      },
+      "snapshot": {
+        "what": "Sheet-metal fabrication with a small CNC machining cell.",
+        "ownership": "Family-owned.",
+        "whyFits": "Right region and ownership.",
+        "watchOut": "Estimated revenue is below the $10M minimum, and it is mainly a fabricator."
+      },
+      "evidence": [
+        {
+          "kind": "FIT",
+          "text": "Family-owned fabricator in Toledo.",
+          "sourceUrl": "https://corliss-fabrication.example/about",
+          "sourceLabel": "Company website"
+        },
+        {
+          "kind": "RISK",
+          "text": "Lists about 45 employees, which suggests revenue under $10M.",
+          "sourceUrl": "https://ohio-business-registry.example/entities/corliss-fabrication",
+          "sourceLabel": "Business registry"
+        }
+      ]
+    },
+    {
+      "id": "northgate",
+      "name": "Northgate Precision",
+      "location": "Erie, PA",
+      "estRevenueRangeM": { "lowM": 12, "highM": 15 },
+      "revenueIsEstimate": true,
+      "fitScore": 49,
+      "analystRecommendation": "skip",
+      "contact": {
+        "name": "Corporate development",
+        "role": "General inquiries",
+        "email": "info@northgate-precision.example"
+      },
+      "snapshot": {
+        "what": "5-axis machining of aerospace structural parts; AS9100 certified.",
+        "ownership": "Owned by a private equity fund since 2023.",
+        "whyFits": "Strong capability match.",
+        "watchOut": "Private equity owned and outside the three target states: two must-haves missed."
+      },
+      "evidence": [
+        {
+          "kind": "FIT",
+          "text": "AS9100 certified with six 5-axis machines.",
+          "sourceUrl": "https://northgate-precision.example/capabilities",
+          "sourceLabel": "Company website"
+        },
+        {
+          "kind": "RISK",
+          "text": "Acquired by Ridgeview Capital Partners in 2023.",
+          "sourceUrl": "https://erie-business-news.example/2023/ridgeview-northgate",
+          "sourceLabel": "Local news (2023)"
+        }
+      ]
+    }
+  ]
+}
