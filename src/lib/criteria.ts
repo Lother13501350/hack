@@ -41,7 +41,7 @@ const ReplySchema = z.object({
 
 const SYSTEM = `You turn an analyst's notes from a CEO interview into acquisition criteria.
 - reason: why the CEO wants to buy. competitor = win customers from a rival; technology = get a capability; new_market = enter a region or segment; supply_chain = own a supplier or customer; buy_and_build = combine similar companies for scale.
-- mustHaves: conditions the CEO stated as required ("must", "has to", "only", "cannot"). One short line each.
+- mustHaves: conditions the CEO stated as required ("must", "has to", "only", "cannot"). One short line each. Always include, as separate lines when the notes state them: the kind of business, the location, and the revenue range with both bounds.
 - niceToHaves: preferences ("would love", "ideally", "best case"). One short line each.
 - revenueMinM and revenueMaxM: the revenue range in millions of dollars, copied from the notes. Use 0 if not stated.
 - Do not include cash, debt or budget limits in mustHaves or niceToHaves; those are handled separately.

@@ -11,7 +11,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "pnpm lint && pnpm typecheck && pnpm format:check && pnpm verify:finance",
-    "verify:finance": "tsx scripts/verify-finance.ts"
+    "verify:finance": "tsx scripts/verify-finance.ts",
+    "set-key": "bash scripts/set-key.sh"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
