@@ -402,6 +402,7 @@ export function DealBriefApp() {
         }
         role={role}
         initials={initialsOf(person)}
+        link={{ href: "/backtest", label: "Real-deal backtest" }}
       />
       <Stepper groups={groups} active={step} onSelect={go} />
       <Page>

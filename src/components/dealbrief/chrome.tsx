@@ -8,6 +8,7 @@
  * - Cards are white with a hairline border. No fills, shadows or dark panels.
  */
 import { ArrowRight, Check } from "lucide-react";
+import Link from "next/link";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -24,24 +25,31 @@ export function AppHeader({
   title,
   role,
   initials,
+  dataLabel = "Sample data (fictional)",
+  link,
 }: {
   section: string;
   title: string;
-  role: Role;
-  initials: string;
+  role?: Role;
+  initials?: string;
+  /** Says where the numbers on screen come from. */
+  dataLabel?: string;
+  link?: { href: string; label: string };
 }) {
   return (
     <header className="border-db-line border-b bg-white">
       <div className="flex h-14 items-center gap-3 px-5">
-        <span
-          aria-hidden="true"
-          className="bg-db-ink flex size-6 items-center justify-center rounded-md text-[11px] font-semibold text-white"
-        >
-          D
-        </span>
-        <span className="text-[15px] font-semibold tracking-tight">
-          DealBrief
-        </span>
+        <Link href="/" className="flex shrink-0 items-center gap-3">
+          <span
+            aria-hidden="true"
+            className="bg-db-ink flex size-6 items-center justify-center rounded-md text-[11px] font-semibold text-white"
+          >
+            D
+          </span>
+          <span className="text-[15px] font-semibold tracking-tight">
+            DealBrief
+          </span>
+        </Link>
         <nav
           aria-label="Breadcrumb"
           className="text-db-muted ml-1 min-w-0 truncate text-[13px]"
@@ -52,14 +60,26 @@ export function AppHeader({
           <span className="text-db-ink">{title}</span>
         </nav>
         <span className="border-db-line text-db-muted ml-auto hidden h-6 shrink-0 items-center rounded-full border px-2.5 text-[11px] sm:flex">
-          Sample data (fictional)
+          {dataLabel}
         </span>
-        <span className="text-db-muted hidden shrink-0 text-[13px] md:inline">
-          {ROLE_LABEL[role]} view
-        </span>
-        <span className="border-db-line bg-db-subtle flex size-7 shrink-0 items-center justify-center rounded-full border text-[11px] font-medium">
-          {initials}
-        </span>
+        {link && (
+          <Link
+            href={link.href}
+            className="text-db-muted hover:text-db-ink hidden shrink-0 text-[13px] md:inline"
+          >
+            {link.label}
+          </Link>
+        )}
+        {role && (
+          <span className="text-db-muted hidden shrink-0 text-[13px] md:inline">
+            {ROLE_LABEL[role]} view
+          </span>
+        )}
+        {initials && (
+          <span className="border-db-line bg-db-subtle flex size-7 shrink-0 items-center justify-center rounded-full border text-[11px] font-medium">
+            {initials}
+          </span>
+        )}
       </div>
     </header>
   );

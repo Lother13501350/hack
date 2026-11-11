@@ -1,0 +1,290 @@
+{
+  "target": {
+    "name": "Electro-Sensors, Inc.",
+    "ticker": "ELSE",
+    "location": "Minnesota, US",
+    "founded": 1968,
+    "business": "Machine monitoring sensors and hazard monitoring systems",
+    "employees": 38
+  },
+  "buyer": {
+    "name": "steute Technologies",
+    "description": "German, founded 1961, about 560 employees; a Battery Ventures portfolio company"
+  },
+  "deal": {
+    "announced": "2026-04-21",
+    "signed": "2026-04-20",
+    "pricePerShare": 7.75,
+    "priceSource": "DEFM14A › Summary",
+    "sharesOutstanding": 3532423,
+    "sharesSource": "DEFM14A › Record Date and Quorum (record date 2026-06-10)",
+    "sharesAreBasic": true,
+    "unaffectedClose": 4.43,
+    "unaffectedCloseDate": "2026-04-20",
+    "unaffectedCloseSource": "DEFM14A › Opinion of Financial Advisor to the Board",
+    "minimumCashCovenantK": 10250,
+    "minimumCashCovenantSource": "DEFM14A › Conduct of Business Pending the Merger (interim covenant for the 10 business days before closing)"
+  },
+  "dilution": {
+    "options": 160000,
+    "optionExercisePrice": 3.98,
+    "rsus": 52500,
+    "asOf": "2025-12-31",
+    "source": "10-K FY2025 › Note 8 (stock-based compensation)"
+  },
+  "filed": [
+    {
+      "fiscalYear": 2024,
+      "revenue": {
+        "valueK": 9373,
+        "source": "10-K FY2025 › Statements of Operations"
+      },
+      "grossProfit": {
+        "valueK": 4582,
+        "source": "10-K FY2025 › Statements of Operations"
+      },
+      "operatingIncome": {
+        "valueK": -4,
+        "source": "10-K FY2025 › Statements of Operations"
+      },
+      "depreciation": {
+        "valueK": 92,
+        "source": "10-K FY2025 › Statements of Cash Flows"
+      },
+      "cash": {
+        "valueK": 9948,
+        "source": "10-K FY2025 › Balance Sheets (cash and cash equivalents)"
+      },
+      "investments": {
+        "valueK": 56,
+        "source": "10-K FY2025 › Balance Sheets (equity securities)"
+      },
+      "receivables": {
+        "valueK": 1309,
+        "source": "10-K FY2025 › Balance Sheets (trade receivables)"
+      },
+      "totalLiabilities": {
+        "valueK": 552,
+        "source": "10-K FY2025 › Balance Sheets (total current liabilities; no noncurrent liabilities)"
+      },
+      "borrowings": {
+        "valueK": 0,
+        "source": "10-K FY2025 › Balance Sheets (no debt, notes payable or credit line)"
+      }
+    },
+    {
+      "fiscalYear": 2025,
+      "revenue": {
+        "valueK": 10142,
+        "source": "10-K FY2025 › Statements of Operations"
+      },
+      "grossProfit": {
+        "valueK": 5157,
+        "source": "10-K FY2025 › Statements of Operations"
+      },
+      "operatingIncome": {
+        "valueK": 2,
+        "source": "10-K FY2025 › Statements of Operations"
+      },
+      "depreciation": {
+        "valueK": 89,
+        "source": "10-K FY2025 › Statements of Cash Flows"
+      },
+      "cash": {
+        "valueK": 10545,
+        "source": "10-K FY2025 › Balance Sheets (cash and cash equivalents)"
+      },
+      "investments": {
+        "valueK": 56,
+        "source": "10-K FY2025 › Balance Sheets (equity securities)"
+      },
+      "receivables": {
+        "valueK": 1404,
+        "source": "10-K FY2025 › Balance Sheets (trade receivables)"
+      },
+      "totalLiabilities": {
+        "valueK": 885,
+        "source": "10-K FY2025 › Balance Sheets (total current liabilities; no noncurrent liabilities)"
+      },
+      "borrowings": {
+        "valueK": 0,
+        "source": "10-K FY2025 › Balance Sheets (no debt, notes payable or credit line)"
+      }
+    }
+  ],
+  "publicCompanyCosts": {
+    "fiscalYear": 2025,
+    "valueK": 916,
+    "source": "DEFM14A › Projected Financial Information (pro forma adjustment: public company costs, related stock compensation and certain non-recurring items)"
+  },
+  "projections": {
+    "source": "DEFM14A › Projected Financial Information",
+    "rows": [
+      {
+        "fiscalYear": 2023,
+        "estimate": false,
+        "revenueK": 8555,
+        "operatingIncomeK": -28,
+        "ebitdaK": 66,
+        "proFormaAdjustmentK": 697,
+        "proFormaEbitdaK": 763
+      },
+      {
+        "fiscalYear": 2024,
+        "estimate": false,
+        "revenueK": 9373,
+        "operatingIncomeK": -4,
+        "ebitdaK": 88,
+        "proFormaAdjustmentK": 848,
+        "proFormaEbitdaK": 936
+      },
+      {
+        "fiscalYear": 2025,
+        "estimate": true,
+        "revenueK": 10100,
+        "operatingIncomeK": 242,
+        "ebitdaK": 368,
+        "proFormaAdjustmentK": 916,
+        "proFormaEbitdaK": 1284
+      },
+      {
+        "fiscalYear": 2026,
+        "estimate": true,
+        "revenueK": 11200,
+        "operatingIncomeK": 621,
+        "ebitdaK": 747,
+        "proFormaAdjustmentK": 872,
+        "proFormaEbitdaK": 1619
+      },
+      {
+        "fiscalYear": 2027,
+        "estimate": true,
+        "revenueK": 12350,
+        "operatingIncomeK": 857,
+        "ebitdaK": 983,
+        "proFormaAdjustmentK": 893,
+        "proFormaEbitdaK": 1876
+      },
+      {
+        "fiscalYear": 2028,
+        "estimate": true,
+        "revenueK": 13500,
+        "operatingIncomeK": 1046,
+        "ebitdaK": 1166,
+        "proFormaAdjustmentK": 880,
+        "proFormaEbitdaK": 2046
+      }
+    ]
+  },
+  "advisor": {
+    "name": "Lake Street Capital Markets",
+    "opinionDate": "2026-04-20",
+    "source": "DEFM14A › Opinion of Financial Advisor to the Board",
+    "methods": [
+      {
+        "method": "Comparable companies, 2026E",
+        "multiples": "11.9x–19.1x",
+        "perShareLow": 5.35,
+        "perShareHigh": 6.82
+      },
+      {
+        "method": "Comparable companies, 2027E",
+        "multiples": "10.8x–16.8x",
+        "perShareLow": 5.83,
+        "perShareHigh": 7.43
+      },
+      {
+        "method": "Comparable companies, 2028E",
+        "multiples": "8.2x–13.5x",
+        "perShareLow": 5.53,
+        "perShareHigh": 7.21
+      },
+      {
+        "method": "Comparable transactions, 2026E",
+        "multiples": "4.8x–18.7x",
+        "perShareLow": 3.76,
+        "perShareHigh": 6.29
+      },
+      {
+        "method": "Comparable transactions, 2027E",
+        "multiples": "4.8x–18.7x",
+        "perShareLow": 3.85,
+        "perShareHigh": 6.64
+      },
+      {
+        "method": "Comparable transactions, 2028E",
+        "multiples": "4.8x–18.7x",
+        "perShareLow": 3.85,
+        "perShareHigh": 6.62
+      },
+      {
+        "method": "DCF, terminal multiple",
+        "multiples": "4.8x–18.7x",
+        "perShareLow": 4.13,
+        "perShareHigh": 7.16
+      },
+      {
+        "method": "DCF, perpetual growth 2%–4%",
+        "multiples": null,
+        "perShareLow": 3.59,
+        "perShareHigh": 3.66
+      }
+    ],
+    "medianPerShare": 5.03,
+    "fixedOpinionFee": 175000
+  },
+  "disclosures": {
+    "customers": "No single customer accounted for 10% or more of sales. At 31 December 2025 one customer exceeded 10% of receivables (none at the end of 2024).",
+    "customersSource": "10-K FY2025 › Item 1 and Note 1",
+    "internationalShare": 0.12,
+    "unquantifiedItems": [
+      "Accelerated vesting of stock compensation for a retired director",
+      "Uncollected sales tax"
+    ]
+  },
+  "timeline": [
+    {
+      "date": "Late 2023 – Aug 2024",
+      "text": "Lake Street and the company review more than 19 strategic options."
+    },
+    {
+      "date": "2025-09-10",
+      "text": "Battery Ventures first contacts management with a concrete interest."
+    },
+    {
+      "date": "2025-11",
+      "text": "Four bidders remain (Parties A–D)."
+    },
+    {
+      "date": "2025-12-02",
+      "text": "Non-binding proposal accepted; exclusivity begins."
+    },
+    {
+      "date": "2026-04-19",
+      "text": "Voting support agreements obtained."
+    },
+    {
+      "date": "2026-04-20",
+      "text": "Merger agreement signed."
+    },
+    {
+      "date": "2026-04-21",
+      "text": "Deal announced at $7.75 per share."
+    }
+  ],
+  "timelineSource": "DEFM14A › Background of the Merger",
+  "sources": [
+    {
+      "label": "DEFM14A merger proxy",
+      "url": "https://www.sec.gov/Archives/edgar/data/0000351789/000114036126026456/ny20072844x2_defm14a.htm"
+    },
+    {
+      "label": "10-K for fiscal 2025",
+      "url": "https://www.sec.gov/Archives/edgar/data/351789/000155485526000455/else-20251231.htm"
+    }
+  ],
+  "verifiedBy": [
+    "2026-11-11: automated cross-check of 16 figures against the 10-K and DEFM14A. Corrected FY2025 depreciation from 126 (proxy projection) to 89 (10-K cash flows); minimum cash is an interim covenant, not a closing condition.",
+    "A teammate still needs to spot-check at least five figures by hand (issue #10)."
+  ]
+}
