@@ -140,7 +140,7 @@ async function llmDraft(
       SYSTEM,
       feedback ? `${context}\n\nFix these problems: ${feedback}` : context,
       ReplySchema,
-      { maxTokens: 700, temperature: 0.4 },
+      { maxTokens: 700 },
     );
     const used = [...new Set(reply.factIndexes)]
       .map((index) => facts[index])

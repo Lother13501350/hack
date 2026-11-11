@@ -30,7 +30,7 @@ pnpm dev                     # http://localhost:3000
 - **先分好檔案範圍。** 每人負責不同資料夾 / 頁面，減少衝突。
 - **共用的東西先定義。** 型別放 `src/types/`，API 介面先講好再各自實作。
 - **秘密不進 git。** API key 放 `.env.local` 或 Vercel 環境變數，`.env.example` 只寫欄位名稱。
-- 每個 PR 會自動跑 CI（lint、型別、build）；Vercel 會給每個 PR 一個預覽網址。
+- CI 目前改為手動觸發（GitHub Actions 帳單問題），合併前請在本機跑 `pnpm check` 和 `pnpm build`；Vercel 仍會給每個 PR 一個預覽網址。
 
 ## 時間表建議
 

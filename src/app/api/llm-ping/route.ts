@@ -6,14 +6,14 @@ import {
   llmConfig,
 } from "@/lib/llm";
 
-/** Test route for the GMI Cloud connection. Safe to delete before the demo. */
+/** Test route for the OpenAI connection. Safe to delete before the demo. */
 export async function GET() {
   const { baseUrl, model } = llmConfig();
   if (!isLlmConfigured()) {
     return Response.json(
       {
         ok: false,
-        error: "GMI_API_KEY is not set. Add it to .env.local.",
+        error: "OPENAI_API_KEY is not set. Add it to .env.local.",
         baseUrl,
         model,
       },
@@ -25,7 +25,7 @@ export async function GET() {
     const [reply, models] = await Promise.all([
       chatText(
         "You are a connection test. Reply with one short sentence.",
-        "Say hello from GMI Cloud.",
+        "Say hello.",
         { maxTokens: 60 },
       ),
       listModels().catch(() => [] as string[]),
@@ -46,7 +46,7 @@ export async function GET() {
         baseUrl,
         model,
         modelListed: models.length ? models.includes(model) : null,
-        availableModels: models.slice(0, 40),
+        availableModels: models.slice(0, 60),
       },
       { status: 502 },
     );
