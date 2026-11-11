@@ -1,24 +1,25 @@
-/** Screen A: acquisition criteria, CEO checkpoint 1 (issue #6). */
-import { formatM1 } from "@/lib/finance/format";
+/** Step 1: acquisition criteria, CEO checkpoint 1 (issue #6). */
 import type { ParsedCriteria } from "@/lib/criteria";
+import { formatM1 } from "@/lib/finance/format";
 import type { AcquisitionCriteria } from "@/types/deal";
 import {
-  ActionButton,
   Badge,
+  Button,
   Card,
-  CardHeading,
-  CheckpointCard,
-  CoachCard,
+  Coach,
   Columns,
+  Label,
   PageTitle,
   Row,
   Skeleton,
+  inputClass,
+  tableHeadClass,
 } from "./chrome";
 
 const STATUS_LABEL: Record<AcquisitionCriteria["status"], string> = {
   draft: "Draft",
   waiting: "Waiting for the CEO",
-  approved: "Approved by the CEO",
+  approved: "Approved",
 };
 
 export function StepCriteria({
@@ -57,9 +58,7 @@ export function StepCriteria({
   const status = criteria?.status ?? "draft";
   const locked = status !== "draft";
   const budget = parsed?.budget;
-  const budgetLabel = budget
-    ? `Up to ~$${Math.floor(budget.maxFundableM)}M`
-    : "";
+  const budgetLabel = budget ? `~$${Math.floor(budget.maxFundableM)}M` : "";
   const rows = criteria
     ? [
         ...criteria.mustHaves.map((row) => ({ ...row, type: "must" as const })),
@@ -67,85 +66,69 @@ export function StepCriteria({
           ...row,
           type: "nice" as const,
         })),
-        {
-          label: "Budget",
-          value: `${budgetLabel} (from our financials)`,
-          type: "info" as const,
-        },
       ]
     : [];
 
   return (
     <>
       <PageTitle
-        eyebrow="Step A · Sample data (fictional)"
-        title="What exactly is our CEO looking for?"
-        subtitle="Turn a 15-minute conversation into search criteria the CEO signs off on."
+        title="Acquisition criteria"
+        subtitle="Turn the conversation with the CEO into search criteria she signs off on."
       />
       <Columns
         rail={
           <>
-            <CheckpointCard eyebrow="CEO checkpoint 1 of 3">
-              <p className="text-db-muted mt-1 text-sm">Status</p>
-              <p className="text-xl font-semibold">{STATUS_LABEL[status]}</p>
+            <Card>
+              <Label>CEO checkpoint · 1 of 3</Label>
+              <p className="mt-2 text-base font-semibold">
+                {STATUS_LABEL[status]}
+              </p>
               {status === "draft" && (
-                <ActionButton
+                <Button
                   className="mt-4 w-full"
                   onClick={onSend}
                   busy={busy === "send"}
                   disabled={!criteria || parsing}
                 >
                   Send to CEO for approval
-                </ActionButton>
+                </Button>
               )}
               {status === "waiting" && (
                 <>
-                  <p className="text-db-muted mt-2 text-sm">
-                    {ceoName} reviews the criteria and her answers. Nothing is
-                    searched until she approves.
+                  <p className="text-db-muted mt-1 text-[13px]">
+                    Nothing is searched until {ceoName.split(" ")[0]} approves.
                   </p>
-                  <ActionButton
+                  <Button
                     className="mt-4 w-full"
-                    tone="dark"
                     onClick={onApprove}
                     busy={busy === "approve"}
                   >
                     Approve as {ceoName.split(" ")[0]} (CEO)
-                  </ActionButton>
+                  </Button>
                 </>
               )}
               {status === "approved" && (
-                <ActionButton
+                <Button
                   className="mt-4 w-full"
                   onClick={onFindTargets}
                   busy={busy === "sourcing"}
                   arrow
                 >
                   Find targets
-                </ActionButton>
+                </Button>
               )}
-            </CheckpointCard>
+            </Card>
 
-            <CoachCard>
-              Vague criteria waste everyone&apos;s time: the agent finds
-              hundreds of companies and the CEO rejects them one by one. Getting
-              a signed-off list of must-haves first is what a Corp Dev team does
-              before any search.
-            </CoachCard>
-
-            <Card>
-              <h2 className="text-lg font-semibold">
-                Budget, from our own numbers
-              </h2>
-              {budget ? (
+            <Card title="Budget">
+              {budget && criteria ? (
                 <>
-                  <p className="mt-1 text-[28px] font-bold tracking-tight">
+                  <p className="-mt-2 text-2xl font-semibold tracking-tight tabular-nums">
                     {budgetLabel}
                   </p>
-                  <div className="mt-2">
+                  <div className="border-db-line mt-3 border-t pt-2">
                     <Row
                       label="Minimum cash to keep"
-                      value={formatM1(criteria?.financialLimits.minCashM ?? 0)}
+                      value={formatM1(criteria.financialLimits.minCashM)}
                     />
                     <Row
                       label="Max debt / EBITDA"
@@ -156,66 +139,67 @@ export function StepCriteria({
                       value={formatM1(budget.existingDebtM)}
                     />
                   </div>
-                  <p className="text-db-muted mt-3 text-[13px] leading-relaxed">
-                    Read from {buyerFile}; the CFO can change the limits.
-                    Recalculated for each target in Deal review.
+                  <p className="text-db-muted mt-2 text-xs leading-relaxed">
+                    From {buyerFile}. Recalculated for each target.
                   </p>
                 </>
               ) : (
-                <Skeleton className="mt-3 h-28" />
+                <Skeleton className="h-28" />
               )}
             </Card>
+
+            <Coach>
+              Vague criteria produce hundreds of companies the CEO rejects one
+              by one. A signed-off list of must-haves comes first.
+            </Coach>
           </>
         }
       >
-        <Card>
-          <CardHeading
-            title="1. Notes from your talk with the CEO"
-            subtitle="Paste notes or a transcript. Plain words are fine."
-          />
-          <label htmlFor="notes" className="text-sm font-semibold">
-            Interview notes
-          </label>
+        <Card
+          title="Interview notes"
+          description="Paste notes or a transcript. Plain words are fine."
+        >
           <textarea
-            id="notes"
+            aria-label="Interview notes"
             value={notes}
             onChange={(event) => onNotes(event.target.value)}
             disabled={locked}
             rows={4}
-            className="border-db-line focus:border-db-blue mt-1.5 w-full resize-y rounded-xl border bg-white px-3.5 py-3 text-[15px] leading-relaxed outline-none disabled:opacity-70"
+            className={`${inputClass} resize-y leading-relaxed`}
           />
           {!locked && (
-            <ActionButton
-              tone="outline"
+            <Button
+              variant="secondary"
               className="mt-3"
               onClick={onParse}
               busy={parsing}
               disabled={!notes.trim()}
             >
-              Update criteria from notes
-            </ActionButton>
+              Extract criteria
+            </Button>
           )}
         </Card>
 
-        <Card>
-          <CardHeading
-            title="2. Criteria the agent will search with"
-            subtitle="Must-haves remove a company. Nice-to-haves raise its score."
-          />
+        <Card
+          title="Search criteria"
+          description="Must-haves remove a company. Nice-to-haves raise its score."
+        >
           {parsing || !criteria ? (
-            <div className="flex flex-col gap-2.5" aria-busy="true">
+            <div className="flex flex-col gap-2" aria-busy="true">
               {Array.from({ length: 6 }, (_, index) => (
-                <Skeleton key={index} className="h-9" />
+                <Skeleton key={index} className="h-8" />
               ))}
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[520px] text-left text-[15px]">
+              <table className="w-full min-w-[480px] text-sm">
                 <thead>
-                  <tr className="text-db-muted border-db-line border-b text-xs tracking-[0.09em] uppercase">
-                    <th className="w-[22%] py-2 font-semibold">Criterion</th>
-                    <th className="py-2 font-semibold">Value</th>
-                    <th className="w-[18%] py-2 font-semibold">Type</th>
+                  <tr className={tableHeadClass}>
+                    <th className="w-[24%] py-2 font-medium">Criterion</th>
+                    <th className="py-2 font-medium">Value</th>
+                    <th className="w-[20%] py-2 text-right font-medium">
+                      Type
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -224,16 +208,12 @@ export function StepCriteria({
                       key={`${row.type}-${row.label}`}
                       className="border-db-line border-b last:border-0"
                     >
-                      <td className="py-2.5 pr-4 font-medium">{row.label}</td>
+                      <td className="text-db-muted py-2.5 pr-4">{row.label}</td>
                       <td className="py-2.5 pr-4">{row.value}</td>
-                      <td className="py-2.5">
-                        {row.type === "must" && (
-                          <Badge tone="ink">Must-have</Badge>
-                        )}
-                        {row.type === "nice" && (
-                          <Badge tone="blue">Nice-to-have</Badge>
-                        )}
-                        {row.type === "info" && <Badge tone="gray">Info</Badge>}
+                      <td className="py-2.5 text-right">
+                        <Badge tone={row.type === "must" ? "solid" : "outline"}>
+                          {row.type === "must" ? "Must-have" : "Nice-to-have"}
+                        </Badge>
                       </td>
                     </tr>
                   ))}
@@ -243,31 +223,30 @@ export function StepCriteria({
           )}
         </Card>
 
-        <Card>
-          <CardHeading
-            title="3. Questions you forgot to ask"
-            subtitle="What an experienced Corp Dev lead would clarify before searching."
-            aside={
-              !locked && parsed?.sampleAnswers ? (
-                <button
-                  type="button"
-                  onClick={onUseSampleAnswers}
-                  className="text-db-blue shrink-0 py-2 text-sm font-semibold hover:underline"
-                >
-                  Use sample answers
-                </button>
-              ) : undefined
-            }
-          />
+        <Card
+          title="Open questions"
+          description="What an experienced deal lead would clarify before searching."
+          aside={
+            !locked && parsed?.sampleAnswers ? (
+              <Button
+                variant="ghost"
+                className="-my-1.5"
+                onClick={onUseSampleAnswers}
+              >
+                Use sample answers
+              </Button>
+            ) : undefined
+          }
+        >
           {parsing || !parsed ? (
-            <Skeleton className="h-40" />
+            <Skeleton className="h-36" />
           ) : (
             <div className="flex flex-col gap-4">
               {parsed.forgottenQuestions.map((question, index) => (
                 <div key={question}>
                   <label
                     htmlFor={`answer-${index}`}
-                    className="text-[15px] font-semibold"
+                    className="text-[13px] font-medium"
                   >
                     {question}
                   </label>
@@ -277,7 +256,7 @@ export function StepCriteria({
                     onChange={(event) => onAnswer(index, event.target.value)}
                     disabled={locked}
                     placeholder="The CEO's answer"
-                    className="border-db-line focus:border-db-blue mt-1.5 w-full rounded-xl border bg-white px-3.5 py-3 text-[15px] outline-none disabled:opacity-70"
+                    className={`${inputClass} mt-1.5`}
                   />
                 </div>
               ))}

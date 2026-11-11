@@ -1,35 +1,18 @@
-/** Screen B: shortlist of targets, CEO checkpoint 2 (issue #4). */
+/** Step 2: shortlist of targets, CEO checkpoint 2 (issue #4). */
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Candidate, SourcingResult } from "@/types/deal";
 import {
-  ActionButton,
   Badge,
+  Button,
   Card,
-  CheckpointCard,
-  CoachCard,
+  Coach,
   Columns,
-  Eyebrow,
+  Label,
   PageTitle,
+  Stats,
 } from "./chrome";
-
-function ScoreBox({ score, selected }: { score: number; selected: boolean }) {
-  return (
-    <span
-      className={cn(
-        "flex size-14 shrink-0 items-center justify-center rounded-xl text-xl font-bold",
-        selected
-          ? "bg-db-blue text-white"
-          : score >= 70
-            ? "bg-db-blue-soft text-db-blue-ink"
-            : "bg-db-track text-db-muted",
-      )}
-    >
-      <span className="sr-only">Fit score </span>
-      {score}
-    </span>
-  );
-}
 
 function Snapshot({ candidate }: { candidate: Candidate }) {
   const sources = candidate.evidence.filter(
@@ -37,44 +20,40 @@ function Snapshot({ candidate }: { candidate: Candidate }) {
       all.findIndex((other) => other.sourceLabel === item.sourceLabel) ===
       index,
   );
+  const cells: [string, string, boolean][] = [
+    ["What they do", candidate.snapshot.what, false],
+    ["Ownership", candidate.snapshot.ownership, false],
+    ["Why it fits", candidate.snapshot.whyFits, false],
+    ["Watch out", candidate.snapshot.watchOut, true],
+  ];
   return (
-    <div className="border-db-line mt-4 rounded-xl border bg-[#fafaf8] p-4">
-      <div className="grid gap-x-6 gap-y-4 md:grid-cols-3">
-        <div>
-          <Eyebrow>What they do</Eyebrow>
-          <p className="mt-1 text-[15px]">{candidate.snapshot.what}</p>
-        </div>
-        <div>
-          <Eyebrow>Ownership</Eyebrow>
-          <p className="mt-1 text-[15px]">{candidate.snapshot.ownership}</p>
-        </div>
-        <div>
-          <Eyebrow className="text-db-blue-ink">Why it fits</Eyebrow>
-          <p className="mt-1 text-[15px]">{candidate.snapshot.whyFits}</p>
-        </div>
-        <div>
-          <Eyebrow className="text-db-orange">Watch out</Eyebrow>
-          <p className="mt-1 text-[15px]">{candidate.snapshot.watchOut}</p>
-        </div>
+    <div className="mt-4 pl-[52px]">
+      <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+        {cells.map(([label, text, isRisk]) => (
+          <div key={label}>
+            <Label className={isRisk ? "text-db-risk" : undefined}>
+              {label}
+            </Label>
+            <p className="mt-1 text-[13px] leading-relaxed">{text}</p>
+          </div>
+        ))}
       </div>
-      <p className="text-db-muted mt-4 text-[13px] leading-relaxed">
+      <p className="text-db-muted mt-4 text-xs">
         Sources:{" "}
         {sources.map((item, index) => (
-          <span key={item.sourceUrl}>
+          <span key={item.sourceLabel}>
             {index > 0 && ", "}
             <a
               href={item.sourceUrl}
               target="_blank"
               rel="noreferrer"
               title={item.text}
-              className="text-db-blue underline"
+              className="text-db-accent hover:underline"
             >
               {item.sourceLabel}
             </a>
           </span>
         ))}
-        {candidate.revenueIsEstimate &&
-          " · Revenue estimated from headcount, not reported"}
       </p>
     </div>
   );
@@ -109,46 +88,30 @@ export function StepTargets({
   return (
     <>
       <PageTitle
-        eyebrow={
-          sourcing.source === "fixture"
-            ? "Step B · Sample data (fictional companies)"
-            : "Step B · Live web search"
-        }
-        title="Which companies should we contact?"
-        subtitle={`Found by the agent, checked by ${analystName} (analyst). You pick who gets an email.`}
+        title="Shortlist"
+        subtitle={`Found by the agent, checked by ${analystName}. The CEO picks who gets an email.`}
       />
-
-      <Card className="mb-5 flex flex-wrap items-center justify-between gap-3 py-4">
-        <p className="text-db-muted text-[15px]">
-          Searched business registries, company websites, industry directories
-          and local news with your approved criteria.
-        </p>
-        <div className="flex flex-wrap gap-2 text-[15px]">
-          <span className="bg-db-track rounded-lg px-3 py-1.5">
-            <strong>{sourcing.funnel.searchResults}</strong> found
-          </span>
-          <span className="bg-db-track rounded-lg px-3 py-1.5">
-            <strong>{sourcing.funnel.passedMustHaves}</strong> meet all
-            must-haves
-          </span>
-          <span className="bg-db-blue-soft text-db-blue-ink rounded-lg px-3 py-1.5">
-            <strong>{sourcing.funnel.shortlisted}</strong> shortlisted
-          </span>
-        </div>
-      </Card>
-
+      <Stats
+        items={[
+          { label: "Companies found", value: sourcing.funnel.searchResults },
+          {
+            label: "Meet all must-haves",
+            value: sourcing.funnel.passedMustHaves,
+          },
+          { label: "Shortlisted", value: sourcing.funnel.shortlisted },
+        ]}
+      />
       <Columns
         rail={
           <>
-            <CheckpointCard eyebrow="CEO checkpoint 2 of 3">
-              <p className="mt-1 text-[28px] font-bold tracking-tight">
-                {count} selected
+            <Card>
+              <Label>CEO checkpoint · 2 of 3</Label>
+              <p className="mt-2 text-base font-semibold">{count} selected</p>
+              <p className="text-db-muted mt-1 text-[13px]">
+                One personal email is drafted for each. Nothing is sent until
+                you approve it.
               </p>
-              <p className="text-db-muted mt-1 text-sm">
-                The agent drafts one personal email for each. Nothing is sent
-                until you approve it.
-              </p>
-              <ActionButton
+              <Button
                 className="mt-4 w-full"
                 onClick={onDraft}
                 busy={busy === "draft"}
@@ -156,89 +119,81 @@ export function StepTargets({
                 arrow
               >
                 Draft {count} {count === 1 ? "email" : "emails"}
-              </ActionButton>
-            </CheckpointCard>
-            <CoachCard>
+              </Button>
+            </Card>
+            <Coach>
               Contact a few companies at a time. Word travels fast in a small
               industry, and an owner who hears you emailed all his competitors
               will not trust you.
-            </CoachCard>
-            <Card>
-              <h2 className="text-lg font-semibold">Rules the agent follows</h2>
-              <ul className="mt-2 list-disc space-y-1.5 pl-5 text-[15px]">
-                <li>Every fact links to a public source</li>
-                <li>No company is invented from memory</li>
-                <li>Financial figures are marked as estimates</li>
-              </ul>
-            </Card>
+            </Coach>
           </>
         }
       >
-        {sourcing.candidates.map((candidate) => {
-          const isSelected = selected.includes(candidate.id);
-          const isOpen = open.includes(candidate.id);
-          const range = candidate.estRevenueRangeM;
-          return (
-            <article
-              key={candidate.id}
-              className={cn(
-                "rounded-2xl bg-white p-5",
-                isSelected
-                  ? "border-db-blue border-2"
-                  : "border-db-line border",
-              )}
-            >
-              <div className="flex items-start gap-4">
-                <ScoreBox score={candidate.fitScore} selected={isSelected} />
-                <div className="min-w-0 flex-1">
-                  <h2 className="text-lg font-semibold">{candidate.name}</h2>
-                  <p className="text-db-muted text-[15px]">
-                    {candidate.location} · Est. revenue ${range.lowM}–
-                    {range.highM}M
-                  </p>
-                  <Badge
-                    className="mt-1.5"
-                    tone={
-                      candidate.analystRecommendation === "recommend"
-                        ? "blue"
-                        : "orange"
-                    }
-                  >
-                    {candidate.analystRecommendation === "recommend"
-                      ? "Analyst recommends"
-                      : "Analyst suggests skip"}
-                  </Badge>
-                </div>
-                <label
-                  className={cn(
-                    "flex min-h-11 shrink-0 cursor-pointer items-center gap-2.5 rounded-xl border px-4 text-[15px] font-semibold",
-                    isSelected
-                      ? "border-db-blue bg-db-blue-soft text-db-blue-ink"
-                      : "border-db-line bg-white",
-                  )}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => onToggle(candidate.id)}
-                    className="accent-db-blue size-4"
-                  />
-                  Contact
-                  <span className="sr-only"> {candidate.name}</span>
-                </label>
-              </div>
-              <button
-                type="button"
-                aria-expanded={isOpen}
-                onClick={() => toggleOpen(candidate.id)}
-                className="text-db-blue mt-3 py-1.5 text-[15px] font-semibold hover:underline"
-              >
-                {isOpen ? "Hide snapshot" : "Show snapshot"}
-              </button>
-              {isOpen && <Snapshot candidate={candidate} />}
-            </article>
-          );
-        })}
+        <Card className="p-0">
+          <ul className="divide-db-line divide-y">
+            {sourcing.candidates.map((candidate) => {
+              const isSelected = selected.includes(candidate.id);
+              const isOpen = open.includes(candidate.id);
+              const range = candidate.estRevenueRangeM;
+              const recommended =
+                candidate.analystRecommendation === "recommend";
+              return (
+                <li key={candidate.id} className="px-5 py-4">
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="checkbox"
+                      aria-label={`Contact ${candidate.name}`}
+                      checked={isSelected}
+                      onChange={() => onToggle(candidate.id)}
+                      className="accent-db-accent size-4 shrink-0"
+                    />
+                    <span
+                      className={cn(
+                        "w-8 shrink-0 text-right text-lg font-semibold tabular-nums",
+                        !recommended && "text-db-muted",
+                      )}
+                    >
+                      <span className="sr-only">Fit score </span>
+                      {candidate.fitScore}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
+                        {candidate.name}
+                        <Badge tone={recommended ? "accent" : "muted"}>
+                          {recommended ? "Recommended" : "Skip suggested"}
+                        </Badge>
+                      </p>
+                      <p className="text-db-muted mt-0.5 text-[13px]">
+                        {candidate.location} · Est. revenue ${range.lowM}–
+                        {range.highM}M
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      aria-expanded={isOpen}
+                      aria-label={`${isOpen ? "Hide" : "Show"} details for ${candidate.name}`}
+                      onClick={() => toggleOpen(candidate.id)}
+                      className="text-db-muted hover:bg-db-subtle hover:text-db-ink flex size-8 shrink-0 items-center justify-center rounded-md"
+                    >
+                      <ChevronDown
+                        className={cn(
+                          "size-4 transition-transform",
+                          isOpen && "rotate-180",
+                        )}
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </div>
+                  {isOpen && <Snapshot candidate={candidate} />}
+                </li>
+              );
+            })}
+          </ul>
+        </Card>
+        <p className="text-db-muted -mt-2 text-xs">
+          Every fact links to a public source. Revenue is estimated from
+          headcount, not reported.
+        </p>
       </Columns>
     </>
   );

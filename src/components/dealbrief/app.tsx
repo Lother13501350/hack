@@ -23,7 +23,7 @@ import type {
   OutreachDraft,
   SourcingResult,
 } from "@/types/deal";
-import { AppHeader, Page, type Role, StepTabs, type TabItem } from "./chrome";
+import { AppHeader, Page, type Role, type StepItem, Stepper } from "./chrome";
 import { postJson } from "./client";
 import { StepCriteria } from "./step-criteria";
 import { StepLater } from "./step-later";
@@ -340,67 +340,52 @@ export function DealBriefApp() {
     );
   }
 
-  const pipelineTabs: (TabItem<Step> | "arrow")[] = [
+  const groups: { label: string; items: StepItem<Step>[] }[] = [
     {
-      id: "criteria",
-      marker: "A",
-      label: "Criteria",
-      done: criteria?.status === "approved",
+      label: "Sourcing",
+      items: [
+        {
+          id: "criteria",
+          label: "Criteria",
+          done: criteria?.status === "approved",
+        },
+        {
+          id: "targets",
+          label: "Shortlist",
+          done: drafts.length > 0,
+          disabled: !sourcing,
+        },
+        {
+          id: "outreach",
+          label: "Outreach",
+          done: drafts.some((draft) => draft.status === "sent"),
+          disabled: drafts.length === 0,
+        },
+      ],
     },
     {
-      id: "targets",
-      marker: "B",
-      label: "Targets",
-      done: drafts.length > 0,
-      disabled: !sourcing,
-    },
-    {
-      id: "outreach",
-      marker: "C",
-      label: "Outreach",
-      done: drafts.some((draft) => draft.status === "sent"),
-      disabled: drafts.length === 0,
-    },
-    "arrow",
-    {
-      id: "setup",
-      marker: "1–4",
       label: "Deal review",
-      disabled: !extraction,
-    },
-  ];
-
-  const dealTabs: TabItem<Step>[] = [
-    { id: "setup", marker: "1", label: "Deal setup", done: Boolean(review) },
-    {
-      id: "quality",
-      marker: "2",
-      label: "Quality check",
-      done: Boolean(review) && step !== "setup",
-      disabled: !review,
-    },
-    {
-      id: "walkaway",
-      marker: "3",
-      label: "Walk-away price",
-      done: Boolean(memo),
-      disabled: !review,
-    },
-    { id: "memo", marker: "4", label: "CFO memo", disabled: !memo },
-  ];
-
-  const checkpoints: { step: Step; label: string; done: boolean }[] = [
-    {
-      step: "criteria",
-      label: "Criteria",
-      done: criteria?.status === "approved",
-    },
-    { step: "targets", label: "Who to contact", done: drafts.length > 0 },
-    {
-      step: "outreach",
-      label: "Each email",
-      done:
-        drafts.length > 0 && drafts.every((draft) => draft.status !== "draft"),
+      items: [
+        {
+          id: "setup",
+          label: "Setup",
+          done: Boolean(review),
+          disabled: !extraction,
+        },
+        {
+          id: "quality",
+          label: "Earnings",
+          done: Boolean(review) && step !== "setup" && step !== "quality",
+          disabled: !review,
+        },
+        {
+          id: "walkaway",
+          label: "Price",
+          done: Boolean(memo),
+          disabled: !review,
+        },
+        { id: "memo", label: "Memo", disabled: !memo },
+      ],
     },
   ];
 
@@ -418,45 +403,8 @@ export function DealBriefApp() {
         role={role}
         initials={initialsOf(person)}
       />
+      <Stepper groups={groups} active={step} onSelect={go} />
       <Page>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          {inPipeline ? (
-            <StepTabs
-              label="Pipeline steps"
-              items={pipelineTabs}
-              active={step}
-              onSelect={go}
-            />
-          ) : (
-            <StepTabs
-              label="Deal review steps"
-              items={dealTabs}
-              active={step}
-              onSelect={go}
-            />
-          )}
-          {inPipeline && (
-            <p className="text-db-muted text-sm">
-              CEO checkpoints:{" "}
-              {checkpoints.map((checkpoint, index) => (
-                <span key={checkpoint.step}>
-                  {index > 0 && " · "}
-                  <span
-                    className={
-                      checkpoint.step === step
-                        ? "text-db-blue-ink font-semibold"
-                        : undefined
-                    }
-                  >
-                    {"①②③"[index]} {checkpoint.label}
-                    {checkpoint.done && " ✓"}
-                  </span>
-                </span>
-              ))}
-            </p>
-          )}
-        </div>
-
         {step === "criteria" && (
           <StepCriteria
             notes={notes}
