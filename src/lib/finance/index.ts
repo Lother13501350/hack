@@ -44,11 +44,10 @@ export function reviewDeal(input: ReviewInput): DealReview {
   const realization = input.realization ?? BASE_CASE_REALIZATION;
 
   const { last } = firstAndLast(target.financials);
-  const ebitdaCell = target.fieldSources?.ebitdaReportedM;
   const { normalizedEbitdaM, bridge } = normalizeEbitda(
     last.ebitdaReportedM,
     target.adjustments,
-    ebitdaCell ? `${target.sourceFile} › ${ebitdaCell}` : target.sourceFile,
+    target.fieldSources?.ebitdaReportedM ?? target.sourceFile,
   );
   const metrics = computeMetrics(target.financials);
   const walkAway = computeWalkAway({
@@ -70,9 +69,10 @@ export function reviewDeal(input: ReviewInput): DealReview {
     normalizedEbitdaM,
     bridge,
     metrics,
-    redFlags: detectRedFlags(target, metrics),
+    redFlags: detectRedFlags(target, metrics, multiple),
     multiple,
     multipleIsPlaceholder: true,
+    synergies,
     walkAway,
     openingBidM: computeWalkAway({
       normalizedEbitdaM,

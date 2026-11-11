@@ -45,6 +45,11 @@ const rows: [label: string, actual: string, expected: string][] = [
   ["Walk-away 50%", walkAt(0.5), "13.4"],
   ["Walk-away 75%", walkAt(0.75), "14.4"],
   ["Walk-away 100%", walkAt(1), "15.4"],
+  [
+    "Combined EBITDA x 3.0",
+    review.financing.grossDebtCapacityM.toFixed(1),
+    "25.2",
+  ],
   ["Max fundable", review.financing.maxFundableM.toFixed(1), "18.7"],
   ["Overpay on reported EBITDA", review.overpayIfReportedM.toFixed(1), "3.5"],
   ["Ask above base-case walk-away", review.askVsWalkAwayM.toFixed(1), "3.1"],

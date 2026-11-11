@@ -9,7 +9,15 @@ const BodySchema = z.object({
   candidates: z.array(CandidateSchema).min(1),
   criteria: AcquisitionCriteriaSchema.optional(),
   /** Defaults to the sample CEO. */
-  ceo: z.object({ name: z.string(), company: z.string() }).optional(),
+  ceo: z
+    .object({
+      name: z.string(),
+      company: z.string(),
+      title: z.string().optional(),
+      city: z.string().optional(),
+      email: z.string().optional(),
+    })
+    .optional(),
 });
 
 /**

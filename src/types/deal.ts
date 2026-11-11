@@ -42,6 +42,13 @@ export const CeoAnswerSchema = z.object({
 });
 export type CeoAnswer = z.infer<typeof CeoAnswerSchema>;
 
+/** One row of the criteria table: "Region" / "Ohio, Michigan, Indiana". */
+export const CriterionSchema = z.object({
+  label: z.string(),
+  value: z.string(),
+});
+export type Criterion = z.infer<typeof CriterionSchema>;
+
 export const AcquisitionCriteriaSchema = z.object({
   reason: AcquisitionReasonSchema,
   industry: z.string(),
@@ -49,8 +56,10 @@ export const AcquisitionCriteriaSchema = z.object({
   revenueMinM: z.number().nonnegative(),
   revenueMaxM: z.number().nonnegative(),
   ownership: z.string(),
-  mustHaves: z.array(z.string()),
-  niceToHaves: z.array(z.string()),
+  /** A company that misses any of these is removed. */
+  mustHaves: z.array(CriterionSchema),
+  /** Each one met raises the fit score. */
+  niceToHaves: z.array(CriterionSchema),
   financialLimits: FinancialLimitsSchema,
   ceoAnswers: z.array(CeoAnswerSchema),
   status: CriteriaStatusSchema,
@@ -69,7 +78,7 @@ export const EvidenceSchema = z.object({
 });
 export type Evidence = z.infer<typeof EvidenceSchema>;
 
-export const AnalystRecommendationSchema = z.enum(["contact", "watch", "skip"]);
+export const AnalystRecommendationSchema = z.enum(["recommend", "skip"]);
 export type AnalystRecommendation = z.infer<typeof AnalystRecommendationSchema>;
 
 export const CandidateSchema = z.object({
@@ -130,7 +139,11 @@ export type OutreachFact = z.infer<typeof OutreachFactSchema>;
 
 export const OutreachDraftSchema = z.object({
   candidateId: z.string(),
+  /** Display form: "Maria Reyes <maria.reyes@summitaero.example>". */
+  from: z.string(),
+  /** Display form: "Robert Hartwell, Founder, Hartwell Precision Components". */
   to: z.string(),
+  toEmail: z.string(),
   subject: z.string(),
   body: z.string(),
   factsUsed: z.array(OutreachFactSchema),
@@ -184,6 +197,9 @@ export const AdjustmentSchema = z.object({
   /** File and cell or page the number came from. */
   source: z.string(),
   note: z.string().optional(),
+  /** owner_compensation / related_party_rent: what is paid today vs the market rate. */
+  actualM: z.number().optional(),
+  marketM: z.number().optional(),
 });
 export type Adjustment = z.infer<typeof AdjustmentSchema>;
 
@@ -192,7 +208,9 @@ export const TargetCompanySchema = z.object({
   location: z.string(),
   askingPriceM: z.number().positive(),
   sourceFile: z.string(),
-  /** Sheet and cell (or page) per Financials field, e.g. { revenueM: "IS!F7" }. */
+  /** One-line description shown under the title, e.g. "Precision machining · Ohio, US". */
+  descriptor: z.string().optional(),
+  /** Where each Financials field was read from, e.g. { grossProfitM: "P&L › lines 3–5" }. */
   fieldSources: z.record(z.string(), z.string()).optional(),
   /** At least two fiscal years, any order. */
   financials: z.array(FinancialsSchema).min(2),
@@ -202,6 +220,7 @@ export type TargetCompany = z.infer<typeof TargetCompanySchema>;
 
 export const BuyerFinancialsSchema = z.object({
   name: z.string(),
+  sourceFile: z.string().optional(),
   ebitdaM: z.number(),
   cashM: z.number(),
   existingDebtM: z.number().nonnegative(),
@@ -217,6 +236,12 @@ export const SynergiesSchema = z.object({
   revenueM: z.number().nonnegative(),
   /** One-time cost of combining the companies. */
   integrationCostM: z.number().nonnegative(),
+  /** Labels and the analyst's basis for each line, shown in the assumptions table. */
+  costLabel: z.string().optional(),
+  costBasis: z.string().optional(),
+  revenueLabel: z.string().optional(),
+  revenueBasis: z.string().optional(),
+  integrationBasis: z.string().optional(),
 });
 export type Synergies = z.infer<typeof SynergiesSchema>;
 
@@ -242,6 +267,8 @@ export type BridgeItem = z.infer<typeof BridgeItemSchema>;
 export const RedFlagSchema = z.object({
   id: z.string(),
   severity: z.enum(["HIGH", "MED"]),
+  /** Two-word tag used when a memo question links back to this flag. */
+  shortLabel: z.string(),
   title: z.string(),
   /** Headline number, already formatted, e.g. "38% of revenue". */
   metric: z.string(),
@@ -270,7 +297,15 @@ export const SensitivityPointSchema = z.object({
 export type SensitivityPoint = z.infer<typeof SensitivityPointSchema>;
 
 export const FinancingSchema = z.object({
+  /** Buyer EBITDA plus the target's normalized EBITDA. */
+  combinedEbitdaM: z.number(),
+  maxDebtToEbitda: z.number(),
+  /** Combined EBITDA x the leverage limit, before existing debt. */
+  grossDebtCapacityM: z.number(),
+  existingDebtM: z.number(),
+  /** Gross capacity minus existing debt. */
   debtCapacityM: z.number(),
+  /** Cash above the minimum the buyer keeps. */
   cashAvailableM: z.number(),
   maxFundableM: z.number(),
 });
@@ -299,6 +334,8 @@ export const DealReviewSchema = z.object({
   multiple: z.number(),
   /** The multiple is a stand-in until real comparable sales are entered. */
   multipleIsPlaceholder: z.literal(true),
+  /** The synergy inputs the walk-away price was built from. */
+  synergies: SynergiesSchema,
   walkAway: WalkAwaySchema,
   /** Walk-away with no synergies counted: where to open the bidding. */
   openingBidM: z.number(),
@@ -331,9 +368,10 @@ export type SellerQuestion = z.infer<typeof SellerQuestionSchema>;
 export const DealMemoSchema = z.object({
   /** Decided by rule in code, never by the LLM. */
   recommendation: RecommendationSchema,
-  /** Built in code from DealReview numbers, e.g. "Do not exceed $13.4M (base case)". */
-  priceGuidance: z.string(),
-  askGap: z.string(),
+  /** Wording of the recommendation, e.g. "Proceed to LOI, with conditions". */
+  headline: z.string(),
+  /** Price limit sentence, built in code from DealReview numbers. */
+  summary: z.string(),
   reasons: z.array(z.string()),
   risks: z.array(z.string()),
   conditionsBeforeLoi: z.array(z.string()),

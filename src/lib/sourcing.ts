@@ -96,6 +96,9 @@ const ExtractedSchema = z.object({
 });
 type ExtractedCompany = z.infer<typeof ExtractedSchema>["companies"][number];
 
+const describe = (row: { label: string; value: string }) =>
+  `${row.label}: ${row.value}`;
+
 const slug = (name: string) =>
   name
     .toLowerCase()
@@ -104,7 +107,7 @@ const slug = (name: string) =>
 
 /**
  * Deterministic score: must-haves carry 70 points, nice-to-haves 30.
- * A candidate missing two or more must-haves is skipped; missing one is a watch.
+ * The analyst recommendation is "recommend" only when every must-have is met.
  */
 export function scoreCandidate(
   mustHavesMet: boolean[],
@@ -117,7 +120,7 @@ export function scoreCandidate(
   );
   const missed = mustHavesMet.filter((met) => !met).length;
   const analystRecommendation: AnalystRecommendation =
-    missed === 0 ? "contact" : missed === 1 ? "watch" : "skip";
+    missed === 0 ? "recommend" : "skip";
   return { fitScore, analystRecommendation };
 }
 
@@ -177,8 +180,8 @@ async function liveSourcing(
       industry: criteria.industry,
       regions: criteria.regions,
       ownership: criteria.ownership,
-      mustHaves: criteria.mustHaves,
-      niceToHaves: criteria.niceToHaves,
+      mustHaves: criteria.mustHaves.map(describe),
+      niceToHaves: criteria.niceToHaves.map(describe),
     }),
     QueriesSchema,
     { maxTokens: 400 },
@@ -200,8 +203,8 @@ Rules:
 - employees: the headcount if a result states it, otherwise null. Do not estimate revenue.
 - Skip directories, news sites and companies that are clearly not operating businesses in the industry.`,
     JSON.stringify({
-      mustHaves: criteria.mustHaves,
-      niceToHaves: criteria.niceToHaves,
+      mustHaves: criteria.mustHaves.map(describe),
+      niceToHaves: criteria.niceToHaves.map(describe),
       searchResults: results.map((result, index) => ({ index, ...result })),
     }),
     ExtractedSchema,
@@ -222,7 +225,7 @@ Rules:
       searchResults: results.length,
       companiesIdentified: all.length,
       passedMustHaves: all.filter(
-        (candidate) => candidate.analystRecommendation === "contact",
+        (candidate) => candidate.analystRecommendation === "recommend",
       ).length,
       shortlisted: candidates.length,
     },

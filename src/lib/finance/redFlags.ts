@@ -1,5 +1,5 @@
 import type { DealMetrics, RedFlag, TargetCompany } from "@/types/deal";
-import { formatDays, formatFY, formatM, formatPct, round2 } from "./format";
+import { formatDays, formatFY, formatM, formatM2, formatPct } from "./format";
 import { firstAndLast } from "./metrics";
 
 /** First-pass thresholds from issue #2. Tunable. */
@@ -12,11 +12,6 @@ export const RED_FLAG_THRESHOLDS = {
   grossMarginDropPts: 2,
 };
 
-function fieldSource(target: TargetCompany, field: string): string {
-  const cell = target.fieldSources?.[field];
-  return cell ? `${target.sourceFile} › ${cell}` : target.sourceFile;
-}
-
 /**
  * Rule-based red flags. Each carries the arithmetic (`formula`) and where the
  * inputs came from (`source`). `coach` starts as a fixed template; the review
@@ -25,41 +20,48 @@ function fieldSource(target: TargetCompany, field: string): string {
 export function detectRedFlags(
   target: TargetCompany,
   metrics: DealMetrics,
+  multiple: number,
   thresholds = RED_FLAG_THRESHOLDS,
 ): RedFlag[] {
-  const { first, last } = firstAndLast(target.financials);
+  const { last } = firstAndLast(target.financials);
   const fromFY = formatFY(metrics.fromYear);
   const toFY = formatFY(metrics.toYear);
+  const sourceOf = (field: string) =>
+    target.fieldSources?.[field] ?? target.sourceFile;
   const flags: RedFlag[] = [];
+  const uniqueId = (base: string) => {
+    const taken = flags.filter((flag) => flag.id.startsWith(base)).length;
+    return taken === 0 ? base : `${base}_${taken + 1}`;
+  };
 
   if (metrics.customerConcentration >= thresholds.customerConcentration) {
     const share = formatPct(metrics.customerConcentration);
     flags.push({
       id: "customer_concentration",
       severity: "HIGH",
+      shortLabel: "Concentration",
       title: `One customer is ${share} of revenue`,
-      metric: `${share} of revenue`,
-      formula: `${formatM(last.topCustomerRevenueM)} ÷ ${formatM(last.revenueM)} = ${formatPct(metrics.customerConcentration, 1)}`,
-      source: fieldSource(target, "topCustomerRevenueM"),
+      metric: share,
+      formula: `Top customer revenue ÷ total revenue = ${formatM(last.topCustomerRevenueM)} ÷ ${formatM(last.revenueM)}`,
+      source: `Source: ${sourceOf("topCustomerRevenueM")}`,
       coach:
-        "If that customer leaves or pushes on price, more than a third of the business moves with it. Experts ask to see the contract, how long it runs, and whether it can be cancelled when the owner changes.",
+        "If this customer leaves after you buy, over a third of revenue leaves too. Experts check how long the contract runs, whether it can be cancelled when the owner changes, and whether the relationship belongs to the company or to the owner personally.",
       stage: "cim",
     });
   }
 
   const dsoIncrease = metrics.dsoEndDays - metrics.dsoStartDays;
   if (dsoIncrease >= thresholds.dsoIncreaseDays) {
-    const start = formatDays(metrics.dsoStartDays);
-    const end = formatDays(metrics.dsoEndDays);
     flags.push({
       id: "dso_increase",
       severity: "HIGH",
+      shortLabel: "Slow payment",
       title: "Customers are paying slower",
-      metric: `${Math.round(metrics.dsoStartDays)} → ${end}`,
-      formula: `${fromFY}: ${formatM(first.accountsReceivableM)} ÷ ${formatM(first.revenueM)} × 365 = ${start}; ${toFY}: ${formatM(last.accountsReceivableM)} ÷ ${formatM(last.revenueM)} × 365 = ${end}`,
-      source: fieldSource(target, "accountsReceivableM"),
+      metric: `${Math.round(metrics.dsoStartDays)} → ${formatDays(metrics.dsoEndDays)}`,
+      formula: "Days sales outstanding = receivables ÷ revenue × 365",
+      source: `Source: ${sourceOf("accountsReceivableM")}`,
       coach:
-        "Sales that are booked but not collected are not cash yet. A jump like this can mean a customer in trouble, disputed invoices, or revenue pulled forward to make the year look better. Ask for the list of unpaid invoices by age.",
+        "Cash is getting stuck. Slower payment can mean disputes, weak customers, or sales pushed out early to make the year look better. Ask for an aging report showing which invoices are late and by how much.",
       stage: "cim",
     });
   }
@@ -70,44 +72,50 @@ export function detectRedFlags(
     flags.push({
       id: "gross_margin_decline",
       severity: "MED",
-      title: "Gross margin is slipping",
+      shortLabel: "Margin",
+      title: `Gross margin fell ${marginDropPts.toFixed(1)} points`,
       metric: `${formatPct(metrics.grossMarginStart, 1)} → ${formatPct(metrics.grossMarginEnd, 1)}`,
-      formula: `${fromFY}: ${formatM(first.grossProfitM)} ÷ ${formatM(first.revenueM)} = ${formatPct(metrics.grossMarginStart, 1)}; ${toFY}: ${formatM(last.grossProfitM)} ÷ ${formatM(last.revenueM)} = ${formatPct(metrics.grossMarginEnd, 1)}`,
-      source: fieldSource(target, "grossProfitM"),
+      formula: `Gross profit ÷ revenue, ${fromFY} vs ${toFY}`,
+      source: `Source: ${sourceOf("grossProfitM")}`,
       coach:
-        "Revenue grew while each dollar of it earned less. That usually means rising material or labor costs the company could not pass on, or discounts to keep a big customer. Ask which it is before assuming the margin comes back.",
+        "Either costs rose and the company could not pass them on, or it cut prices to win volume. Both mean less pricing power than the growth rate suggests.",
       stage: "cim",
     });
   }
 
   for (const adjustment of target.adjustments) {
-    if (adjustment.category === "one_time_revenue" && adjustment.amountM > 0) {
+    if (adjustment.amountM <= 0) continue;
+    if (adjustment.category === "one_time_revenue") {
       flags.push({
-        id: `one_time_revenue_${adjustment.id}`,
+        id: uniqueId("one_time_revenue"),
         severity: "MED",
-        title: "Profit includes a one-time item",
-        metric: `${formatM(adjustment.amountM)} will not repeat`,
-        formula: `${adjustment.label}: ${formatM(adjustment.amountM)} removed from EBITDA`,
-        source: adjustment.source,
-        coach:
-          "The price is a multiple of yearly profit, so profit that happens once gets paid for several times over. Experts take it out before applying the multiple.",
+        shortLabel: "One-time revenue",
+        title: `One-time revenue inside ${toFY}`,
+        metric: formatM2(adjustment.amountM),
+        formula: adjustment.note ?? adjustment.label,
+        source: `Source: ${adjustment.source}`,
+        coach: `You pay a multiple of earnings, so every dollar of one-off profit can cost you ${multiple} dollars of price. Remove it before valuing.`,
         stage: "data_room",
       });
     }
     if (
       adjustment.category === "owner_compensation" &&
-      adjustment.type === "add_cost" &&
-      adjustment.amountM > 0
+      adjustment.type === "add_cost"
     ) {
+      const hasDetail =
+        adjustment.marketM !== undefined && adjustment.actualM !== undefined;
       flags.push({
-        id: `owner_pay_${adjustment.id}`,
+        id: uniqueId("owner_pay"),
         severity: "MED",
-        title: "The owner is paid below market",
-        metric: `${formatM(adjustment.amountM)} a year understated`,
-        formula: `Market CEO pay − owner's pay = ${formatM(round2(adjustment.amountM))} a year`,
-        source: adjustment.source,
+        shortLabel: "Owner dependence",
+        title: "Owner is paid below market",
+        metric: formatM2(-adjustment.amountM),
+        formula: hasDetail
+          ? `Market CEO pay ${formatM2(adjustment.marketM as number)} − owner salary ${formatM2(adjustment.actualM as number)}`
+          : `Market CEO pay − owner salary = ${formatM2(adjustment.amountM)}`,
+        source: `Source: ${adjustment.source}`,
         coach:
-          "The owner leaves after the sale and you will pay a replacement the market rate. That extra cost comes out of profit every year, so the reported profit overstates what you are buying.",
+          "After the sale you must hire someone to run the company at market pay. That cost is real even though it is not in the seller’s numbers.",
         stage: "data_room",
       });
     }

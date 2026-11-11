@@ -1,16 +1,17 @@
 {
   "name": "Hartwell Precision Components",
   "location": "Dayton, OH",
+  "descriptor": "Precision machining · Ohio, US",
   "askingPriceM": 16.5,
   "sourceFile": "Hartwell_FY23-25.xlsx",
   "fieldSources": {
-    "revenueM": "IS!F7",
-    "grossProfitM": "IS!F12",
-    "ebitdaReportedM": "IS!F52",
-    "accountsReceivableM": "BS!F9",
-    "topCustomerRevenueM": "Customers!C4",
-    "cashM": "BS!F6",
-    "debtM": "BS!F27"
+    "revenueM": "P&L › line 3",
+    "grossProfitM": "P&L › lines 3–5",
+    "ebitdaReportedM": "P&L › EBITDA",
+    "accountsReceivableM": "Balance sheet › AR, FY23 vs FY25",
+    "topCustomerRevenueM": "Hartwell_FY23-25.xlsx › Customers!C4",
+    "cashM": "Balance sheet › Cash",
+    "debtM": "Balance sheet › Borrowings"
   },
   "financials": [
     {
@@ -37,30 +38,32 @@
   "adjustments": [
     {
       "id": "tooling",
-      "label": "One-time tooling order",
+      "label": "One-time tooling revenue",
       "amountM": 0.4,
       "type": "remove_revenue",
       "category": "one_time_revenue",
-      "source": "Hartwell_FY23-25.xlsx › IS!F14",
-      "note": "Profit on a tooling order in FY25 that will not repeat."
+      "source": "P&L › Other revenue",
+      "note": "Tooling orders tagged non-recurring"
     },
     {
       "id": "owner_pay",
-      "label": "Owner's pay below market",
+      "label": "Owner paid below market",
       "amountM": 0.25,
       "type": "add_cost",
       "category": "owner_compensation",
-      "source": "Hartwell_FY23-25.xlsx › IS!F31",
-      "note": "Owner draws $0.15M; a hired CEO costs about $0.40M."
+      "source": "P&L › Salaries; market estimate entered by analyst",
+      "actualM": 0.15,
+      "marketM": 0.4
     },
     {
       "id": "rent",
-      "label": "Related-party rent below market",
+      "label": "Rent from owner below market",
       "amountM": 0.15,
       "type": "add_cost",
       "category": "related_party_rent",
-      "source": "Hartwell_FY23-25.xlsx › Leases!C6",
-      "note": "Plant is leased from the owner at $0.20M; market rent is about $0.35M."
+      "source": "Lease schedule; market rent entered by analyst",
+      "actualM": 0.2,
+      "marketM": 0.35
     },
     {
       "id": "legal",
@@ -68,8 +71,8 @@
       "amountM": 0.1,
       "type": "add_back",
       "category": "one_time_expense",
-      "source": "Hartwell_FY23-25.xlsx › IS!F44",
-      "note": "Settlement paid in FY25; not expected to recur."
+      "source": "P&L › Legal and professional",
+      "note": "Settlement paid in FY25; not expected to recur"
     }
   ]
 }

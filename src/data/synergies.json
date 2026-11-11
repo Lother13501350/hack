@@ -1,5 +1,10 @@
 {
   "costM": 0.5,
   "revenueM": 0.3,
-  "integrationCostM": 0.6
+  "integrationCostM": 0.6,
+  "costLabel": "Cost: joint purchasing",
+  "costBasis": "Both buy aluminium stock from the same 3 suppliers",
+  "revenueLabel": "Revenue: cross-selling",
+  "revenueBasis": "EBITDA from selling our parts to Hartwell's customers",
+  "integrationBasis": "ERP migration, severance, rebranding"
 }

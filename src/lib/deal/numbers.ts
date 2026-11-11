@@ -37,6 +37,11 @@ export function reviewAmountsM(review: DealReview): number[] {
     review.financing.maxFundableM,
     review.overpayIfReportedM,
     review.askVsWalkAwayM,
+    review.synergies.costM,
+    review.synergies.revenueM,
+    review.synergies.integrationCostM,
+    review.financing.grossDebtCapacityM,
+    review.financing.existingDebtM,
     ...review.sensitivity.map((point) => point.walkAwayM),
     ...review.bridge.flatMap((row) => [row.deltaM, row.runningM]),
   ];

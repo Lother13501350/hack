@@ -24,21 +24,7 @@ const FINANCIAL_FIELDS: [keyof Omit<Financials, "fiscalYear">, string][] = [
   ["debtM", "Debt"],
 ];
 
-/** Column letter the sample workbook uses for each fiscal year. */
-function columnFor(
-  cell: string,
-  fiscalYear: number,
-  latestYear: number,
-): string {
-  const offset = latestYear - fiscalYear;
-  return cell.replace(/([A-Z])(\d+)$/, (_, column: string, row: string) => {
-    const shifted = String.fromCharCode(column.charCodeAt(0) - offset);
-    return `${shifted}${row}`;
-  });
-}
-
 function fieldsFor(target: TargetCompany): ExtractedField[] {
-  const latestYear = Math.max(...target.financials.map((y) => y.fiscalYear));
   const fields: ExtractedField[] = [
     {
       key: "askingPriceM",
@@ -51,14 +37,11 @@ function fieldsFor(target: TargetCompany): ExtractedField[] {
   ];
   for (const year of target.financials) {
     for (const [field, label] of FINANCIAL_FIELDS) {
-      const cell = target.fieldSources?.[field];
       fields.push({
         key: `financials.${year.fiscalYear}.${field}`,
         label: `${label}, FY${String(year.fiscalYear).slice(-2)}`,
         value: year[field],
-        sourceRef: cell
-          ? columnFor(cell, year.fiscalYear, latestYear)
-          : target.sourceFile,
+        sourceRef: target.fieldSources?.[field] ?? target.sourceFile,
         confidence: 0.97,
         confirmed: false,
       });
@@ -69,8 +52,7 @@ function fieldsFor(target: TargetCompany): ExtractedField[] {
       key: `adjustments.${adjustment.id}.amountM`,
       label: adjustment.label,
       value: adjustment.amountM,
-      sourceRef:
-        adjustment.source.split("›").pop()?.trim() ?? adjustment.source,
+      sourceRef: adjustment.source,
       // Adjustments involve judgment, so they are flagged for a closer look.
       confidence: 0.82,
       confirmed: false,

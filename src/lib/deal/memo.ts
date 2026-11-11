@@ -1,10 +1,10 @@
 /**
- * Decision memo (issue #5).
- * The recommendation and every dollar figure are decided in code.
+ * Decision memo (issue #5, screen 4).
+ * The recommendation and every dollar figure in the headline are decided in code.
  * The LLM writes reasons, risks, conditions and questions around them.
  */
 import { z } from "zod";
-import { formatFY, formatM, formatPct } from "@/lib/finance";
+import { formatFY, formatM1, formatM2, formatPct } from "@/lib/finance";
 import { chatJSON, isLlmConfigured } from "@/lib/llm";
 import type {
   AcquisitionCriteria,
@@ -38,99 +38,115 @@ export function decideRecommendation(review: DealReview): Recommendation {
   return "Proceed with conditions";
 }
 
-function priceLines(review: DealReview): {
-  priceGuidance: string;
-  askGap: string;
-} {
-  const realization = review.walkAway.realization;
-  const caseLabel =
-    realization === 0.5
-      ? "base case"
-      : `${formatPct(realization)} of synergies counted`;
+const HEADLINES: Record<Recommendation, string> = {
+  Proceed: "Proceed to LOI",
+  "Proceed with conditions": "Proceed to LOI, with conditions",
+  "Walk away": "Do not proceed at this price",
+};
+
+/** The price-limit sentence under the headline. Every figure comes from the review. */
+function summarize(review: DealReview): string {
+  const { realization, walkAwayM } = review.walkAway;
+  const share = `${formatPct(realization)} of synergies achieved`;
+  const caseLabel = realization === 0.5 ? `base case, ${share}` : share;
+  const limit = formatM1(walkAwayM);
+  const ask = formatM1(review.askingPriceM);
   const gap = review.askVsWalkAwayM;
-  return {
-    priceGuidance: `Do not exceed ${formatM(review.walkAway.walkAwayM)} (${caseLabel})`,
-    askGap:
-      gap > 0
-        ? `The ask is ${formatM(gap)} above`
-        : `The ask is ${formatM(-gap)} inside your limit`,
-  };
+  if (gap <= 0) {
+    return `The seller's ask of ${ask} is ${formatM1(-gap)} inside our limit of ${limit} (${caseLabel}).`;
+  }
+  const ceiling = walkAwayAt(review, 1);
+  const versusCeiling =
+    review.askingPriceM > ceiling
+      ? `and above our ceiling even if every synergy is achieved (${formatM1(ceiling)})`
+      : `but inside our ceiling if every synergy is achieved (${formatM1(ceiling)})`;
+  return `Do not exceed ${limit} (${caseLabel}). The seller's ask of ${ask} is ${formatM1(gap)} above that, ${versusCeiling}.`;
 }
 
-const QUESTION_BY_FLAG: Record<string, (flag: RedFlag) => string> = {
-  customer_concentration: () =>
-    "Can we see the contract with your largest customer, including its term and what happens to it if ownership changes?",
-  dso_increase: () =>
-    "Can you share the list of unpaid invoices by age, and explain why customers are taking longer to pay?",
-  gross_margin_decline: () =>
-    "What drove the drop in gross margin, and which of those costs have you been able to pass on to customers?",
-  one_time_revenue: () =>
-    "Which revenue in the latest year came from orders you do not expect to repeat?",
-  owner_pay: () =>
-    "What does the owner do day to day, and what would it cost to hire someone to do it after the sale?",
+const flagOf = (review: DealReview, idPrefix: string) =>
+  review.redFlags.find((flag) => flag.id.startsWith(idPrefix));
+
+const REASON_OPENERS: Record<AcquisitionCriteria["reason"], string> = {
+  competitor: "Removes a direct competitor in our core segment",
+  technology: "Brings a capability we do not have in-house",
+  new_market: "Gives us a foothold in a new market",
+  supply_chain: "Secures a key part of our supply chain",
+  buy_and_build: "Adds scale in a business we already know",
 };
 
-function questionFor(flag: RedFlag): string {
-  const key = Object.keys(QUESTION_BY_FLAG).find((prefix) =>
-    flag.id.startsWith(prefix),
-  );
-  return key
-    ? QUESTION_BY_FLAG[key](flag)
-    : `Can you walk us through this: ${flag.title.toLowerCase()}?`;
-}
-
-const CONDITION_BY_FLAG: Record<string, string> = {
-  customer_concentration:
-    "See the contract with the largest customer before signing a letter of intent.",
-  dso_increase: "Get the list of unpaid invoices by age.",
-  gross_margin_decline:
-    "Get gross margin by customer and by product line for the last three years.",
-  one_time_revenue:
-    "Have the seller confirm in writing which revenue was one-time.",
-  owner_pay: "Agree how long the owner stays on and at what pay.",
-};
-
-function conditionFor(flag: RedFlag): string | undefined {
-  const key = Object.keys(CONDITION_BY_FLAG).find((prefix) =>
-    flag.id.startsWith(prefix),
-  );
-  return key ? CONDITION_BY_FLAG[key] : undefined;
+function questionFor(flag: RedFlag, review: DealReview): string {
+  const { fromYear, toYear } = review.metrics;
+  if (flag.id.startsWith("customer_concentration")) {
+    return "Share the top customer's contract, including term and change-of-control clauses.";
+  }
+  if (flag.id.startsWith("dso_increase")) {
+    return `Provide receivables aging by customer for ${formatFY(Math.max(fromYear, toYear - 1))} and ${formatFY(toYear)}.`;
+  }
+  if (flag.id.startsWith("gross_margin_decline")) {
+    return "Explain the gross margin decline: price changes vs. input costs.";
+  }
+  if (flag.id.startsWith("one_time_revenue")) {
+    return `Confirm the ${flag.metric} of one-time revenue will not repeat in ${formatFY(toYear + 1)}.`;
+  }
+  if (flag.id.startsWith("owner_pay")) {
+    return "Will the owner stay through a transition period, and on what terms?";
+  }
+  return `Walk us through this: ${flag.title.toLowerCase()}.`;
 }
 
 /** Memo written entirely from templates and engine numbers. Always available. */
-export function templateMemo(review: DealReview): DealMemo {
-  const { metrics } = review;
-  const adjustmentCount = review.bridge.filter(
-    (row) => row.kind === "adjustment",
-  ).length;
-  const highFlags = review.redFlags.filter((flag) => flag.severity === "HIGH");
+export function templateMemo(
+  review: DealReview,
+  criteria?: AcquisitionCriteria,
+): DealMemo {
+  const { metrics, financing, synergies } = review;
+  const recommendation = decideRecommendation(review);
+  const concentration = flagOf(review, "customer_concentration");
+  const dso = flagOf(review, "dso_increase");
+  const dsoIncrease = Math.round(metrics.dsoEndDays - metrics.dsoStartDays);
+  const yearsBack = metrics.toYear - metrics.fromYear;
+
+  const opener = REASON_OPENERS[criteria?.reason ?? "competitor"];
+  const reasons = [
+    `${opener}; revenue has grown ${formatPct(metrics.revenueCagr, 1)} a year since ${formatFY(metrics.fromYear)}.`,
+    synergies.costM > 0
+      ? `${formatM2(synergies.costM)} a year of purchasing savings is within our control.`
+      : `${formatM2(review.normalizedEbitdaM)} of yearly earnings holds up after our checks.`,
+    `We can fund up to ${formatM1(financing.maxFundableM)} without breaching ${financing.maxDebtToEbitda.toFixed(1)}× leverage.`,
+  ];
+
   const risks = [
-    ...highFlags,
-    ...review.redFlags.filter((f) => f.severity === "MED"),
+    concentration
+      ? `${concentration.title}. Losing it would erase most of the deal's value.`
+      : undefined,
+    `Real earnings are ${formatM2(review.normalizedEbitdaM)}, not the ${formatM2(review.reportedEbitdaM)} the seller reports.`,
+    dso
+      ? `Customers are paying ${dsoIncrease} days slower than ${yearsBack === 2 ? "two years ago" : `in ${formatFY(metrics.fromYear)}`}.`
+      : undefined,
+    ...review.redFlags
+      .filter((flag) => flag !== concentration && flag !== dso)
+      .map((flag) => `${flag.title} (${flag.metric}).`),
   ]
-    .slice(0, 3)
-    .map((flag) =>
-      // Skip the metric when the title already states it ("One customer is 38% of revenue").
-      flag.title.includes(flag.metric.split(" ")[0])
-        ? `${flag.title}.`
-        : `${flag.title} (${flag.metric}).`,
-    );
+    .filter((risk): risk is string => Boolean(risk))
+    .slice(0, 3);
+
+  const conditionsBeforeLoi = [
+    concentration
+      ? "Top customer confirms the relationship survives a change of owner."
+      : undefined,
+    dso ? "Receivables aging shows no material disputes." : undefined,
+    `Seller accepts valuation on ${formatM2(review.normalizedEbitdaM)} normalized EBITDA.`,
+  ].filter((condition): condition is string => Boolean(condition));
 
   return {
-    recommendation: decideRecommendation(review),
-    ...priceLines(review),
-    reasons: [
-      `${formatM(review.normalizedEbitdaM)} of the ${formatM(review.reportedEbitdaM)} reported yearly profit holds up after ${adjustmentCount} adjustments.`,
-      `At ${review.multiple.toFixed(1)}x that is worth ${formatM(review.walkAway.standaloneM)} on its own, and you can fund up to ${formatM(review.financing.maxFundableM)}, so money is not the constraint.`,
-      `Revenue grew ${formatPct(metrics.revenueCagr, 1)} a year from ${formatFY(metrics.fromYear)} to ${formatFY(metrics.toYear)}.`,
-    ],
+    recommendation,
+    headline: HEADLINES[recommendation],
+    summary: summarize(review),
+    reasons,
     risks,
-    conditionsBeforeLoi: review.redFlags
-      .map(conditionFor)
-      .filter((condition): condition is string => Boolean(condition))
-      .slice(0, 4),
+    conditionsBeforeLoi,
     sellerQuestions: review.redFlags.slice(0, 5).map((flag) => ({
-      question: questionFor(flag),
+      question: questionFor(flag, review),
       redFlagId: flag.id,
     })),
     source: "template",
@@ -147,17 +163,18 @@ const MemoReplySchema = z.object({
     .max(5),
 });
 
-const SYSTEM = `You are writing a short decision memo for a CEO who is considering buying a company.
-You are given a computed deal review and the recommendation, which is already decided.
-Write:
-- reasons: 3 reasons that support the recommendation.
-- risks: 3 risks, most serious first.
-- conditionsBeforeLoi: 2 to 4 things to obtain before signing a letter of intent.
+const SYSTEM = `You are writing a one-page decision memo for a CFO who is considering buying a company.
+You are given a computed deal review, the buyer's goal, and a draft memo. The recommendation and the price limit are already decided.
+Rewrite the draft's four lists in your own words, keeping the same substance:
+- reasons: 3 reasons to pursue the deal.
+- risks: 3 key risks, most serious first.
+- conditionsBeforeLoi: 2 to 4 conditions to meet before signing a letter of intent.
 - sellerQuestions: one question for the seller per red flag (up to 5), each with that flag's id as redFlagId.
 Rules:
 - Use only dollar amounts and percentages that appear in the review. Never calculate or estimate a new number.
-- Write dollar amounts exactly as "$13.4M".
-- Plain language, one sentence per item. Do not restate the recommendation or the price limit.`;
+- Write earnings-sized amounts like "$2.40M" and price-sized amounts like "$13.4M", exactly as they appear in the draft.
+- Plain language a non-specialist can follow, one or two short sentences per item.
+- Do not restate the recommendation or the price limit.`;
 
 function problemsWith(
   reply: z.infer<typeof MemoReplySchema>,
@@ -198,17 +215,26 @@ export async function buildMemo(
   review: DealReview,
   criteria?: AcquisitionCriteria,
 ): Promise<DealMemo> {
-  const fallback = templateMemo(review);
+  const fallback = templateMemo(review, criteria);
   if (!isLlmConfigured()) return fallback;
 
   const context = JSON.stringify({
-    recommendation: fallback.recommendation,
-    priceGuidance: fallback.priceGuidance,
-    askGap: fallback.askGap,
-    review,
+    recommendation: fallback.headline,
+    priceLimit: fallback.summary,
     buyerGoal: criteria
-      ? { reason: criteria.reason, mustHaves: criteria.mustHaves }
+      ? {
+          reason: criteria.reason,
+          mustHaves: criteria.mustHaves,
+          ceoAnswers: criteria.ceoAnswers,
+        }
       : undefined,
+    draft: {
+      reasons: fallback.reasons,
+      risks: fallback.risks,
+      conditionsBeforeLoi: fallback.conditionsBeforeLoi,
+      sellerQuestions: fallback.sellerQuestions,
+    },
+    review,
   });
 
   try {
