@@ -1,14 +1,22 @@
-/** Shared layout pieces for the DealBrief screens (design: issue #12). */
-import { ArrowRight, Check, TrendingUp } from "lucide-react";
+/**
+ * Shared layout pieces for the DealBrief screens.
+ *
+ * Visual rules, so every screen reads as one product:
+ * - Ink on white. One accent (selection, links, the screen's key number) and
+ *   one risk tone (amounts that reduce value, high-severity flags).
+ * - 14px body, 13px secondary, 11px uppercase labels. Semibold, never bold.
+ * - Cards are white with a hairline border. No fills, shadows or dark panels.
+ */
+import { ArrowRight, Check } from "lucide-react";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export type Role = "analyst" | "ceo" | "cfo";
 
 const ROLE_LABEL: Record<Role, string> = {
-  analyst: "Analyst view",
-  ceo: "CEO view",
-  cfo: "CFO view",
+  analyst: "Analyst",
+  ceo: "CEO",
+  cfo: "CFO",
 };
 
 export function AppHeader({
@@ -22,36 +30,34 @@ export function AppHeader({
   role: Role;
   initials: string;
 }) {
-  const isAnalyst = role === "analyst";
   return (
     <header className="border-db-line border-b bg-white">
-      <div className="flex items-center gap-4 px-6 py-3.5 lg:px-8">
-        <span className="bg-db-ink flex size-8 items-center justify-center rounded-lg text-white">
-          <TrendingUp className="size-4" aria-hidden="true" />
+      <div className="flex h-14 items-center gap-3 px-5">
+        <span
+          aria-hidden="true"
+          className="bg-db-ink flex size-6 items-center justify-center rounded-md text-[11px] font-semibold text-white"
+        >
+          D
         </span>
-        <span className="text-lg font-bold tracking-tight">DealBrief</span>
+        <span className="text-[15px] font-semibold tracking-tight">
+          DealBrief
+        </span>
         <nav
           aria-label="Breadcrumb"
-          className="text-db-muted ml-2 min-w-0 truncate text-sm"
+          className="text-db-muted ml-1 min-w-0 truncate text-[13px]"
         >
-          {section} / <span className="text-db-ink font-medium">{title}</span>
+          <span className="mr-2 opacity-40">/</span>
+          {section}
+          <span className="mx-2 opacity-40">/</span>
+          <span className="text-db-ink">{title}</span>
         </nav>
-        <span
-          className={cn(
-            "ml-auto shrink-0 rounded-full px-3 py-1 text-xs font-semibold",
-            isAnalyst
-              ? "bg-db-blue-soft text-db-blue-ink"
-              : "bg-db-ink text-white",
-          )}
-        >
-          {ROLE_LABEL[role]}
+        <span className="border-db-line text-db-muted ml-auto hidden h-6 shrink-0 items-center rounded-full border px-2.5 text-[11px] sm:flex">
+          Sample data (fictional)
         </span>
-        <span
-          className={cn(
-            "flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white",
-            isAnalyst ? "bg-db-ink" : "bg-db-blue",
-          )}
-        >
+        <span className="text-db-muted hidden shrink-0 text-[13px] md:inline">
+          {ROLE_LABEL[role]} view
+        </span>
+        <span className="border-db-line bg-db-subtle flex size-7 shrink-0 items-center justify-center rounded-full border text-[11px] font-medium">
           {initials}
         </span>
       </div>
@@ -59,154 +65,92 @@ export function AppHeader({
   );
 }
 
-export function Page({ children }: { children: ReactNode }) {
-  return (
-    <main className="mx-auto w-full max-w-[1280px] px-6 pt-7 pb-24 lg:px-10">
-      {children}
-    </main>
-  );
-}
-
-/** Main column plus a 320px rail that drops below on narrow screens. */
-export function Columns({
-  children,
-  rail,
-}: {
-  children: ReactNode;
-  rail: ReactNode;
-}) {
-  return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_330px]">
-      <div className="flex min-w-0 flex-col gap-5">{children}</div>
-      <aside className="flex flex-col gap-5">{rail}</aside>
-    </div>
-  );
-}
-
-export interface TabItem<T extends string> {
+export interface StepItem<T extends string> {
   id: T;
-  marker: string;
   label: string;
   done?: boolean;
   disabled?: boolean;
 }
 
-export function StepTabs<T extends string>({
-  items,
+/** One continuous stepper for the whole flow, split into named groups. */
+export function Stepper<T extends string>({
+  groups,
   active,
   onSelect,
-  label,
 }: {
-  items: (TabItem<T> | "arrow")[];
+  groups: { label: string; items: StepItem<T>[] }[];
   active: T;
   onSelect: (id: T) => void;
-  label: string;
 }) {
+  // Steps are numbered continuously across groups.
+  const offsets = groups.map((_, index) =>
+    groups.slice(0, index).reduce((sum, group) => sum + group.items.length, 0),
+  );
   return (
-    <nav aria-label={label} className="flex flex-wrap items-center gap-2">
-      {items.map((item, index) =>
-        item === "arrow" ? (
-          <ArrowRight
-            key={`arrow-${index}`}
-            className="text-db-muted mx-1 size-4"
-            aria-hidden="true"
-          />
-        ) : (
-          <button
-            key={item.id}
-            type="button"
-            disabled={item.disabled}
-            aria-current={item.id === active ? "step" : undefined}
-            onClick={() => onSelect(item.id)}
-            className={cn(
-              "flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-colors",
-              item.id === active
-                ? "border-db-ink bg-db-ink text-white"
-                : "border-db-line text-db-ink hover:border-db-ink/40 bg-white",
-              item.disabled && "cursor-not-allowed opacity-50",
+    <nav aria-label="Steps" className="border-db-line border-b bg-white">
+      <div className="mx-auto flex h-12 w-full max-w-[1152px] items-center gap-1 overflow-x-auto px-6">
+        {groups.map((group, groupIndex) => (
+          <div key={group.label} className="flex shrink-0 items-center gap-1">
+            {groupIndex > 0 && (
+              <span aria-hidden="true" className="bg-db-line mx-3 h-4 w-px" />
             )}
-          >
-            {item.done && item.id !== active ? (
-              <Check className="size-3.5" aria-hidden="true" />
-            ) : (
-              <span
-                className={cn(
-                  item.id === active ? "font-semibold" : "text-db-muted",
-                )}
-              >
-                {item.marker}
-              </span>
-            )}
-            {item.label}
-          </button>
-        ),
-      )}
+            <span className="text-db-muted mr-2 hidden text-[11px] font-medium tracking-[0.08em] uppercase lg:inline">
+              {group.label}
+            </span>
+            {group.items.map((item, itemIndex) => {
+              const number = offsets[groupIndex] + itemIndex + 1;
+              const isActive = item.id === active;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  disabled={item.disabled}
+                  aria-current={isActive ? "step" : undefined}
+                  onClick={() => onSelect(item.id)}
+                  className={cn(
+                    "flex h-8 shrink-0 items-center gap-2 rounded-md px-2 text-[13px] transition-colors",
+                    isActive
+                      ? "text-db-ink font-medium"
+                      : "text-db-muted hover:text-db-ink",
+                    item.disabled && "cursor-not-allowed opacity-45",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "flex size-5 items-center justify-center rounded-full text-[11px] font-medium tabular-nums",
+                      isActive
+                        ? "bg-db-ink text-white"
+                        : item.done
+                          ? "bg-db-subtle text-db-ink"
+                          : "border-db-line border",
+                    )}
+                  >
+                    {item.done && !isActive ? (
+                      <Check className="size-3" aria-label="Done" />
+                    ) : (
+                      number
+                    )}
+                  </span>
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+        ))}
+      </div>
     </nav>
   );
 }
 
-export function Eyebrow({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+export function Page({ children }: { children: ReactNode }) {
   return (
-    <p
-      className={cn(
-        "text-db-muted text-xs font-semibold tracking-[0.09em] uppercase",
-        className,
-      )}
-    >
+    <main className="mx-auto w-full max-w-[1152px] px-6 pt-8 pb-24">
       {children}
-    </p>
+    </main>
   );
 }
 
 export function PageTitle({
-  eyebrow,
-  title,
-  subtitle,
-}: {
-  eyebrow?: string;
-  title: string;
-  subtitle?: ReactNode;
-}) {
-  return (
-    <div className="mt-8 mb-6">
-      {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-      <h1 className="mt-1.5 text-[34px] leading-[1.15] font-bold tracking-tight text-balance">
-        {title}
-      </h1>
-      {subtitle && <p className="text-db-muted mt-2 text-[17px]">{subtitle}</p>}
-    </div>
-  );
-}
-
-export function Card({
-  children,
-  className,
-  role,
-}: {
-  children: ReactNode;
-  className?: string;
-  role?: string;
-}) {
-  return (
-    <section
-      role={role}
-      className={cn(
-        "border-db-line rounded-2xl border bg-white p-6",
-        className,
-      )}
-    >
-      {children}
-    </section>
-  );
-}
-
-export function CardHeading({
   title,
   subtitle,
   aside,
@@ -216,33 +160,91 @@ export function CardHeading({
   aside?: ReactNode;
 }) {
   return (
-    <div className="mb-4 flex items-start justify-between gap-4">
-      <div>
-        <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
-        {subtitle && <p className="text-db-muted mt-0.5 text-sm">{subtitle}</p>}
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div className="min-w-0">
+        <h1 className="text-2xl font-semibold tracking-tight text-balance">
+          {title}
+        </h1>
+        {subtitle && <p className="text-db-muted mt-1 text-sm">{subtitle}</p>}
       </div>
       {aside}
     </div>
   );
 }
 
-/** The blue-outlined card that marks a point where a person must decide. */
-export function CheckpointCard({
-  eyebrow,
+/** Main column plus a narrow rail that drops below on small screens. */
+export function Columns({
   children,
+  rail,
 }: {
-  eyebrow: string;
   children: ReactNode;
+  rail: ReactNode;
 }) {
   return (
-    <section className="border-db-blue rounded-2xl border-2 bg-white p-6">
-      <Eyebrow className="text-db-blue-ink">{eyebrow}</Eyebrow>
+    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_304px]">
+      <div className="flex min-w-0 flex-col gap-5">{children}</div>
+      <aside className="flex flex-col gap-5 print:hidden">{rail}</aside>
+    </div>
+  );
+}
+
+export function Card({
+  title,
+  description,
+  aside,
+  children,
+  className,
+  role,
+}: {
+  title?: string;
+  description?: ReactNode;
+  aside?: ReactNode;
+  children: ReactNode;
+  className?: string;
+  role?: string;
+}) {
+  return (
+    <section
+      role={role}
+      className={cn("border-db-line rounded-xl border bg-white p-5", className)}
+    >
+      {(title || aside) && (
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <div>
+            {title && <h2 className="text-sm font-semibold">{title}</h2>}
+            {description && (
+              <p className="text-db-muted mt-0.5 text-[13px]">{description}</p>
+            )}
+          </div>
+          {aside}
+        </div>
+      )}
       {children}
     </section>
   );
 }
 
-export function CoachCard({
+export function Label({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <p
+      className={cn(
+        "text-db-muted text-[11px] font-medium tracking-[0.08em] uppercase",
+        className,
+      )}
+    >
+      {children}
+    </p>
+  );
+}
+
+/** Expert context in a quiet block. The only decorative element on a screen. */
+export function Coach({
   title = "Coach",
   children,
   className,
@@ -252,38 +254,23 @@ export function CoachCard({
   className?: string;
 }) {
   return (
-    <section className={cn("bg-db-blue-soft rounded-2xl p-5", className)}>
-      <Eyebrow className="text-db-blue-ink">{title}</Eyebrow>
-      <div className="mt-2 text-[15px] leading-relaxed">{children}</div>
-    </section>
+    <div className={cn("bg-db-subtle rounded-lg px-4 py-3", className)}>
+      <Label>{title}</Label>
+      <div className="mt-1 text-[13px] leading-relaxed">{children}</div>
+    </div>
   );
 }
 
-export function DarkCard({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <section className={cn("bg-db-ink rounded-2xl p-6 text-white", className)}>
-      {children}
-    </section>
-  );
-}
+type Variant = "primary" | "secondary" | "ghost";
 
-type Tone = "blue" | "dark" | "white" | "outline";
-
-const BUTTON_TONES: Record<Tone, string> = {
-  blue: "bg-db-blue text-white hover:bg-db-blue/90",
-  dark: "bg-db-ink text-white hover:bg-db-ink/90",
-  white: "bg-white text-db-ink hover:bg-white/90",
-  outline: "border border-db-line bg-white text-db-ink hover:border-db-ink/40",
+const BUTTON_VARIANTS: Record<Variant, string> = {
+  primary: "bg-db-ink text-white hover:bg-db-ink/85",
+  secondary: "border border-db-line bg-white text-db-ink hover:bg-db-subtle",
+  ghost: "text-db-muted hover:text-db-ink",
 };
 
-export function ActionButton({
-  tone = "blue",
+export function Button({
+  variant = "primary",
   busy = false,
   arrow = false,
   className,
@@ -291,7 +278,7 @@ export function ActionButton({
   disabled,
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
-  tone?: Tone;
+  variant?: Variant;
   busy?: boolean;
   arrow?: boolean;
 }) {
@@ -300,27 +287,26 @@ export function ActionButton({
       type="button"
       disabled={disabled || busy}
       className={cn(
-        "flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-[15px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-55",
-        BUTTON_TONES[tone],
+        "flex h-9 items-center justify-center gap-1.5 rounded-lg px-3.5 text-[13px] font-medium whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-45",
+        BUTTON_VARIANTS[variant],
         className,
       )}
       {...props}
     >
       {busy ? "Working…" : children}
-      {arrow && !busy && <ArrowRight className="size-4" aria-hidden="true" />}
+      {arrow && !busy && <ArrowRight className="size-3.5" aria-hidden="true" />}
     </button>
   );
 }
 
-type BadgeTone = "ink" | "blue" | "gray" | "orange" | "amber" | "green";
+type Tone = "solid" | "outline" | "accent" | "risk" | "muted";
 
-const BADGE_TONES: Record<BadgeTone, string> = {
-  ink: "bg-db-ink text-white",
-  blue: "bg-db-blue-soft text-db-blue-ink",
-  gray: "bg-db-track text-db-ink",
-  orange: "bg-db-orange-soft text-db-orange",
-  amber: "bg-db-amber-soft text-db-amber",
-  green: "bg-db-green-soft text-db-green",
+const BADGE_TONES: Record<Tone, string> = {
+  solid: "bg-db-ink text-white",
+  outline: "border border-db-line text-db-ink",
+  accent: "bg-db-accent-soft text-db-accent",
+  risk: "bg-db-risk-soft text-db-risk",
+  muted: "bg-db-subtle text-db-muted",
 };
 
 export function Badge({
@@ -328,14 +314,14 @@ export function Badge({
   children,
   className,
 }: {
-  tone: BadgeTone;
+  tone: Tone;
   children: ReactNode;
   className?: string;
 }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold whitespace-nowrap",
+        "inline-flex h-5 items-center rounded-md px-1.5 text-[11px] font-medium whitespace-nowrap",
         BADGE_TONES[tone],
         className,
       )}
@@ -345,7 +331,20 @@ export function Badge({
   );
 }
 
-/** Label and value on one line, used in the small summary cards on the rail. */
+/** Small colored dot: risk for high severity, neutral otherwise. */
+export function Dot({ high }: { high: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "inline-block size-2 shrink-0 rounded-full",
+        high ? "bg-db-risk" : "bg-db-muted/45",
+      )}
+    />
+  );
+}
+
+/** Label and value on one line. */
 export function Row({
   label,
   value,
@@ -360,13 +359,13 @@ export function Row({
   return (
     <div
       className={cn(
-        "flex items-baseline justify-between gap-4 py-1.5 text-[15px]",
-        strong ? "font-semibold" : "text-db-muted",
+        "flex items-baseline justify-between gap-4 py-1.5 text-[13px]",
+        strong ? "text-db-ink font-medium" : "text-db-muted",
       )}
     >
       <span>{label}</span>
       <span
-        className={cn("text-db-ink font-semibold tabular-nums", valueClassName)}
+        className={cn("text-db-ink font-medium tabular-nums", valueClassName)}
       >
         {value}
       </span>
@@ -374,11 +373,40 @@ export function Row({
   );
 }
 
+/** A row of headline figures separated by hairlines. */
+export function Stats({
+  items,
+}: {
+  items: { label: string; value: ReactNode; note?: ReactNode }[];
+}) {
+  return (
+    <dl className="border-db-line divide-db-line mb-5 grid divide-y rounded-xl border bg-white sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none">
+      {items.map((item) => (
+        <div key={item.label} className="px-5 py-4">
+          <dt className="text-db-muted text-[13px]">{item.label}</dt>
+          <dd className="mt-1 flex items-baseline gap-2 text-xl font-semibold tracking-tight tabular-nums">
+            {item.value}
+            {item.note && (
+              <span className="text-[13px] font-medium">{item.note}</span>
+            )}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 export function Skeleton({ className }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={cn("bg-db-track animate-pulse rounded-lg", className)}
+      className={cn("bg-db-subtle animate-pulse rounded-md", className)}
     />
   );
 }
+
+export const inputClass =
+  "border-db-line focus:border-db-ink w-full rounded-lg border bg-white px-3 py-2 text-sm outline-none transition-colors placeholder:text-db-muted/70 disabled:bg-db-subtle disabled:text-db-muted";
+
+export const tableHeadClass =
+  "text-db-muted border-db-line border-b text-left text-[11px] font-medium tracking-[0.08em] uppercase";

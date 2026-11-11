@@ -1,19 +1,18 @@
-/** Screen 1: deal setup (issue #9). Upload, confirm extracted numbers, run the review. */
+/** Step 4: deal setup (issue #9). Upload, confirm extracted numbers, run the review. */
 import { Check } from "lucide-react";
 import { useState } from "react";
 import { formatM1 } from "@/lib/finance/format";
 import type { AcquisitionCriteria, ExtractionResult } from "@/types/deal";
 import {
-  ActionButton,
   Badge,
+  Button,
   Card,
-  CardHeading,
-  CoachCard,
+  Coach,
   Columns,
-  DarkCard,
-  Eyebrow,
+  Label,
   PageTitle,
   Skeleton,
+  tableHeadClass,
 } from "./chrome";
 
 const REASON_LABEL: Record<AcquisitionCriteria["reason"], string> = {
@@ -23,35 +22,6 @@ const REASON_LABEL: Record<AcquisitionCriteria["reason"], string> = {
   supply_chain: "Secure the supply chain",
   buy_and_build: "Buy and build",
 };
-
-function FileTile({
-  eyebrow,
-  file,
-  status,
-  parsed,
-  dashed = false,
-}: {
-  eyebrow: string;
-  file: string;
-  status: string;
-  parsed: boolean;
-  dashed?: boolean;
-}) {
-  return (
-    <div
-      className={`border-db-line rounded-xl bg-[#fafaf8] p-4 ${dashed ? "border border-dashed" : "border"}`}
-    >
-      <Eyebrow>{eyebrow}</Eyebrow>
-      <p className="mt-1.5 text-[17px] font-semibold break-words">{file}</p>
-      <p
-        className={`mt-1 flex items-start gap-1 text-sm ${parsed ? "text-db-green" : "text-db-muted"}`}
-      >
-        {parsed && <Check className="mt-0.5 size-3.5 shrink-0" aria-hidden />}
-        {status}
-      </p>
-    </div>
-  );
-}
 
 export function StepSetup({
   extraction,
@@ -74,21 +44,27 @@ export function StepSetup({
   const target = extraction?.target;
   const fields = extraction?.fields ?? [];
   const pending = fields.filter((field) => !field.confirmed).length;
-  const span = target
-    ? Math.max(...target.financials.map((year) => year.fiscalYear)) -
-      Math.min(...target.financials.map((year) => year.fiscalYear)) +
-      1
-    : 0;
+  const files =
+    extraction && target
+      ? [
+          { role: "Buyer", name: buyerFile, detail: "P&L, balance sheet" },
+          {
+            role: "Target",
+            name: extraction.fileName,
+            detail: "P&L, balance sheet, customer list",
+          },
+          {
+            role: "Seller's notes",
+            name: `${target.name.split(" ")[0]}_one-time_expenses.pdf`,
+            detail: `${target.adjustments.length} adjustments, asking price ${formatM1(target.askingPriceM)}`,
+          },
+        ]
+      : [];
 
   return (
     <>
       <PageTitle
-        eyebrow="New deal review · Sample data (fictional)"
-        title={
-          target
-            ? `Should we buy ${target.name}?`
-            : "Should we buy this company?"
-        }
+        title={target?.name ?? "Deal setup"}
         subtitle={
           target
             ? `${target.descriptor ?? target.location} · Seller asking ${formatM1(target.askingPriceM)}`
@@ -98,123 +74,103 @@ export function StepSetup({
       <Columns
         rail={
           <>
-            <DarkCard>
-              <h2 className="text-xl font-semibold">What you will get</h2>
-              <ol className="mt-3 list-decimal space-y-2.5 pl-5 text-[15px]">
-                <li>
-                  Red flags and the target&apos;s <strong>real</strong> earnings
-                </li>
-                <li>
-                  The <strong>most you should pay</strong>, and why
-                </li>
-                <li>Questions to ask the seller</li>
-                <li>A one-page memo for your CFO</li>
-              </ol>
-              <ActionButton
-                tone="white"
-                className="mt-5 w-full"
+            <Card title="Deal review">
+              <p className="text-db-muted -mt-2 text-[13px] leading-relaxed">
+                Real earnings, the most you should pay, questions for the
+                seller, and a one-page memo for the CFO.
+              </p>
+              <Button
+                className="mt-4 w-full"
                 onClick={onRun}
                 busy={busy === "review"}
                 disabled={!extraction || pending > 0}
                 arrow
               >
                 Run deal review
-              </ActionButton>
-              <p className="mt-2.5 text-center text-[13px] text-white/75">
-                {pending > 0
-                  ? `Confirm ${pending} extracted numbers first`
-                  : "Numbers are calculated at once; the coach text takes a few seconds"}
-              </p>
-            </DarkCard>
-            <CoachCard>
-              Why do we need <strong>your</strong> numbers too? The same company
-              is worth more to a buyer who can cut its costs or sell to its
-              customers, and less to one who must borrow heavily to buy it.
-              Experts never value a target in isolation.
-            </CoachCard>
-            <p className="text-db-muted px-1 text-[13px] leading-relaxed">
-              Every number is calculated by a fixed model and links back to a
-              cell in your files. AI writes only the explanations.
-            </p>
+              </Button>
+              {pending > 0 && (
+                <p className="text-db-muted mt-2 text-xs">
+                  Confirm the {pending} extracted numbers first.
+                </p>
+              )}
+            </Card>
+            <Coach>
+              The same company is worth more to a buyer who can cut its costs or
+              sell to its customers. Experts never value a target in isolation,
+              which is why your own numbers are needed too.
+            </Coach>
           </>
         }
       >
-        <Card>
-          <CardHeading
-            title="1. Upload financials"
-            subtitle={
-              <>
-                Both companies. A target is only worth what it is worth{" "}
-                <em>to you</em>.
-              </>
-            }
-          />
+        <Card
+          title="Financials"
+          description="Both companies. A target is only worth what it is worth to you."
+        >
           {extraction && target ? (
             <>
-              <div className="grid gap-3 md:grid-cols-3">
-                <FileTile
-                  eyebrow="Your company (buyer)"
-                  file={buyerFile}
-                  status={`Parsed · ${span} years · P&L, balance sheet`}
-                  parsed
-                />
-                <FileTile
-                  eyebrow="Target company"
-                  file={extraction.fileName}
-                  status={`Parsed · ${span} years · customer list found`}
-                  parsed
-                />
-                <FileTile
-                  eyebrow="Seller's notes"
-                  file={`${target.name.split(" ")[0]}_one-time_expenses.pdf`}
-                  status={`${target.adjustments.length} adjustments found · asking price ${formatM1(target.askingPriceM)}`}
-                  parsed={false}
-                  dashed
-                />
-              </div>
+              <ul className="divide-db-line border-db-line divide-y rounded-lg border">
+                {files.map((file) => (
+                  <li
+                    key={file.name}
+                    className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3"
+                  >
+                    <span className="text-db-muted w-24 shrink-0 text-[13px]">
+                      {file.role}
+                    </span>
+                    <span className="min-w-0 flex-1 text-sm font-medium break-all">
+                      {file.name}
+                    </span>
+                    <span className="text-db-muted flex items-center gap-1.5 text-[13px]">
+                      <Check className="size-3.5" aria-hidden="true" />
+                      {file.detail}
+                    </span>
+                  </li>
+                ))}
+              </ul>
 
-              <div className="border-db-line mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3">
-                <p className="text-[15px]">
-                  <strong>{fields.length} numbers extracted</strong> from the
-                  uploaded files.{" "}
-                  {pending > 0 ? (
-                    <span className="text-db-orange font-semibold">
-                      {pending} not confirmed yet.
-                    </span>
-                  ) : (
-                    <span className="text-db-green font-semibold">
-                      All confirmed by the analyst.
-                    </span>
-                  )}
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-[13px]">
+                  <span className="font-medium">
+                    {fields.length} numbers extracted.
+                  </span>{" "}
+                  <span
+                    className={pending > 0 ? "text-db-risk" : "text-db-muted"}
+                  >
+                    {pending > 0
+                      ? `${pending} to confirm.`
+                      : "All confirmed by the analyst."}
+                  </span>
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  <ActionButton
-                    tone="outline"
+                <div className="flex gap-2">
+                  <Button
+                    variant="secondary"
                     aria-expanded={showNumbers}
                     onClick={() => setShowNumbers((value) => !value)}
                   >
-                    {showNumbers ? "Hide numbers" : "Check numbers"}
-                  </ActionButton>
+                    {showNumbers ? "Hide numbers" : "Review numbers"}
+                  </Button>
                   {pending > 0 && (
-                    <ActionButton onClick={onConfirmAll}>
+                    <Button variant="secondary" onClick={onConfirmAll}>
                       Confirm all
-                    </ActionButton>
+                    </Button>
                   )}
                 </div>
               </div>
 
               {showNumbers && (
-                <div className="mt-3 max-h-80 overflow-auto">
-                  <table className="w-full min-w-[560px] text-left text-sm">
-                    <thead>
-                      <tr className="text-db-muted border-db-line border-b text-xs tracking-[0.09em] uppercase">
-                        <th className="py-2 font-semibold">Number</th>
-                        <th className="py-2 text-right font-semibold">
-                          Value ($M)
+                <div className="border-db-line mt-3 max-h-80 overflow-auto rounded-lg border">
+                  <table className="w-full min-w-[560px] text-[13px]">
+                    <thead className="sticky top-0 bg-white">
+                      <tr className={tableHeadClass}>
+                        <th className="px-4 py-2 font-medium">Number</th>
+                        <th className="px-4 py-2 text-right font-medium">$M</th>
+                        <th className="px-4 py-2 font-medium">Read from</th>
+                        <th className="px-4 py-2 text-right font-medium">
+                          Confidence
                         </th>
-                        <th className="py-2 pl-4 font-semibold">Read from</th>
-                        <th className="px-3 py-2 font-semibold">Confidence</th>
-                        <th className="py-2 font-semibold">Confirmed</th>
+                        <th className="px-4 py-2 text-right font-medium">
+                          Confirmed
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -223,23 +179,25 @@ export function StepSetup({
                           key={field.key}
                           className="border-db-line border-b last:border-0"
                         >
-                          <td className="py-2 pr-3 font-medium">
-                            {field.label}
-                          </td>
-                          <td className="py-2 text-right tabular-nums">
+                          <td className="px-4 py-2">{field.label}</td>
+                          <td className="px-4 py-2 text-right tabular-nums">
                             {field.value.toFixed(2)}
                           </td>
-                          <td className="text-db-muted py-2 pl-4">
+                          <td className="text-db-muted px-4 py-2">
                             {field.sourceRef}
                           </td>
-                          <td className="px-3 py-2">
-                            <Badge
-                              tone={field.confidence >= 0.9 ? "green" : "amber"}
+                          <td className="px-4 py-2 text-right tabular-nums">
+                            <span
+                              className={
+                                field.confidence < 0.9
+                                  ? "text-db-risk"
+                                  : "text-db-muted"
+                              }
                             >
                               {Math.round(field.confidence * 100)}%
-                            </Badge>
+                            </span>
                           </td>
-                          <td className="py-2">
+                          <td className="px-4 py-2 text-right">
                             <input
                               type="checkbox"
                               aria-label={`Confirm ${field.label}`}
@@ -247,7 +205,7 @@ export function StepSetup({
                               onChange={(event) =>
                                 onConfirm(field.key, event.target.checked)
                               }
-                              className="accent-db-blue size-4"
+                              className="accent-db-accent size-4 align-middle"
                             />
                           </td>
                         </tr>
@@ -262,32 +220,26 @@ export function StepSetup({
           )}
         </Card>
 
-        <Card>
-          <CardHeading
-            title="2. Already agreed with your CEO"
-            subtitle="Carried over from your search criteria. No need to ask again."
-            aside={
-              criteria?.status === "approved" ? (
-                <Badge tone="green" className="px-2.5 py-1 text-[13px]">
-                  Approved in step A
-                </Badge>
-              ) : undefined
-            }
-          />
+        <Card
+          title="Agreed with the CEO"
+          description="Carried over from the search criteria."
+          aside={
+            criteria?.status === "approved" ? (
+              <Badge tone="outline">Approved</Badge>
+            ) : undefined
+          }
+        >
           {criteria ? (
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="border-db-line rounded-xl border bg-[#fafaf8] p-4">
-                <Eyebrow>Why we are buying</Eyebrow>
-                <p className="mt-1.5 text-[17px] font-semibold">
+            <div className="grid gap-x-8 gap-y-5 sm:grid-cols-3">
+              <div>
+                <Label>Why we are buying</Label>
+                <p className="mt-1.5 text-sm">
                   {REASON_LABEL[criteria.reason]}
                 </p>
-                <p className="text-db-muted mt-1 text-sm">
-                  Decides which synergies we model in step 3
-                </p>
               </div>
-              <div className="border-db-line rounded-xl border bg-[#fafaf8] p-4">
-                <Eyebrow>Financial limits</Eyebrow>
-                <ul className="mt-1.5 space-y-1 text-[15px]">
+              <div>
+                <Label>Financial limits</Label>
+                <ul className="mt-1.5 space-y-0.5 text-sm">
                   <li>
                     Keep ≥ {formatM1(criteria.financialLimits.minCashM)} cash
                   </li>
@@ -301,10 +253,10 @@ export function StepSetup({
                   </li>
                 </ul>
               </div>
-              <div className="border-db-line rounded-xl border bg-[#fafaf8] p-4">
-                <Eyebrow>CEO&apos;s answers</Eyebrow>
+              <div>
+                <Label>CEO&apos;s answers</Label>
                 {criteria.ceoAnswers.length > 0 ? (
-                  <ul className="mt-1.5 space-y-1 text-[15px]">
+                  <ul className="mt-1.5 space-y-0.5 text-sm">
                     {criteria.ceoAnswers.map((entry) => (
                       <li key={entry.question} title={entry.question}>
                         {entry.answer}
@@ -312,18 +264,20 @@ export function StepSetup({
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-db-muted mt-1.5 text-[15px]">
-                    No answers were recorded in step A.
-                  </p>
+                  <p className="text-db-muted mt-1.5 text-sm">None recorded.</p>
                 )}
               </div>
             </div>
           ) : (
-            <p className="text-db-muted text-[15px]">
-              No criteria yet. Go back to step A to set them.
+            <p className="text-db-muted text-sm">
+              No criteria yet. Set them in step 1.
             </p>
           )}
         </Card>
+        <p className="text-db-muted -mt-2 text-xs">
+          Every number is calculated by a fixed model and traces back to your
+          files. AI writes only the explanations.
+        </p>
       </Columns>
     </>
   );

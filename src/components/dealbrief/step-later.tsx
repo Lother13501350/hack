@@ -1,6 +1,5 @@
 /** Interlude between outreach and deal review. Front-end only; fictional timeline. */
 import { ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 type Actor = "Agent" | "CEO" | "Seller";
 
@@ -31,7 +30,7 @@ export function StepLater({
   const events: { day: number; text: string; actor: Actor }[] = [
     {
       day: 0,
-      text: `${sentLabel} sent from ${ceoFirstName}’s Gmail.`,
+      text: `${sentLabel} sent from ${ceoFirstName}’s inbox.`,
       actor: "Agent",
     },
     {
@@ -41,14 +40,14 @@ export function StepLater({
     },
     {
       day: 6,
-      text: `${ceoFirstName} and ${founderFirst} meet for coffee in Dayton.`,
+      text: `${ceoFirstName} and ${founderFirst} meet for coffee.`,
       actor: "CEO",
     },
     ...(otherCompany
       ? [
           {
             day: 7,
-            text: `No reply from ${otherCompany}. A follow-up draft waits for ${ceoFirstName}’s approval.`,
+            text: `No reply from ${otherCompany}. A follow-up draft waits for approval.`,
             actor: "Agent" as const,
           },
         ]
@@ -56,56 +55,49 @@ export function StepLater({
     { day: 10, text: "Both sides sign an NDA.", actor: "CEO" },
     {
       day: 14,
-      text: `${targetShortName} sends 3 years of financials, his list of one-time expenses, and an asking price of ${askingPrice}.`,
+      text: `${targetShortName} sends three years of financials and an asking price of ${askingPrice}.`,
       actor: "Seller",
     },
   ];
 
   return (
-    <main className="bg-db-ink min-h-screen text-white">
-      <div className="mx-auto w-full max-w-[1080px] px-6 py-20 lg:px-10">
-        <p className="text-xs font-semibold tracking-[0.09em] text-white/70 uppercase">
+    <main className="bg-db-ink flex min-h-screen items-center text-white">
+      <div className="mx-auto w-full max-w-[880px] px-6 py-20">
+        <p className="text-[11px] font-medium tracking-[0.08em] text-white/60 uppercase">
           Meanwhile, people do what only people can
         </p>
-        <h1 className="mt-3 text-6xl font-bold tracking-tight">
-          Two weeks later.
+        <h1 className="mt-3 text-5xl font-semibold tracking-tight">
+          Two weeks later
         </h1>
 
         <ol className="mt-12 border-t border-white/15">
           {events.map((event) => (
             <li
               key={event.day}
-              className="flex items-center gap-6 border-b border-white/15 py-5"
+              className="grid grid-cols-[64px_minmax(0,1fr)_56px] items-baseline gap-4 border-b border-white/15 py-4"
             >
-              <span className="w-16 shrink-0 text-sm font-semibold text-white/70">
+              <span className="text-[13px] text-white/60 tabular-nums">
                 Day {event.day}
               </span>
-              <span className="min-w-0 flex-1 text-xl">{event.text}</span>
-              <span
-                className={cn(
-                  "shrink-0 rounded-full px-3 py-1 text-xs font-semibold",
-                  event.actor === "Agent"
-                    ? "bg-db-blue-soft text-db-blue-ink"
-                    : "text-db-ink bg-white",
-                )}
-              >
+              <span className="text-base">{event.text}</span>
+              <span className="text-right text-[11px] font-medium tracking-[0.08em] text-white/60 uppercase">
                 {event.actor}
               </span>
             </li>
           ))}
         </ol>
 
-        <div className="mt-12 flex flex-wrap items-center gap-5">
+        <div className="mt-10 flex flex-wrap items-center gap-4">
           <button
             type="button"
             onClick={onStart}
             disabled={busy}
-            className="text-db-ink flex min-h-14 items-center gap-2 rounded-xl bg-white px-7 text-lg font-semibold hover:bg-white/90 disabled:opacity-60"
+            className="text-db-ink flex h-10 items-center gap-1.5 rounded-lg bg-white px-4 text-sm font-medium hover:bg-white/90 disabled:opacity-60"
           >
             {busy ? "Working…" : `Start deal review for ${targetShortName}`}
-            {!busy && <ArrowRight className="size-5" aria-hidden="true" />}
+            {!busy && <ArrowRight className="size-4" aria-hidden="true" />}
           </button>
-          <span className="text-[15px] text-white/70">
+          <span className="text-[13px] text-white/60">
             Sample timeline (fictional)
           </span>
         </div>
