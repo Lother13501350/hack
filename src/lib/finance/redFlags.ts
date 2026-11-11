@@ -34,7 +34,11 @@ export function detectRedFlags(
     return taken === 0 ? base : `${base}_${taken + 1}`;
   };
 
-  if (metrics.customerConcentration >= thresholds.customerConcentration) {
+  if (
+    metrics.customerConcentration !== null &&
+    last.topCustomerRevenueM !== null &&
+    metrics.customerConcentration >= thresholds.customerConcentration
+  ) {
     const share = formatPct(metrics.customerConcentration);
     flags.push({
       id: "customer_concentration",

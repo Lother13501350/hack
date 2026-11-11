@@ -37,10 +37,12 @@ function fieldsFor(target: TargetCompany): ExtractedField[] {
   ];
   for (const year of target.financials) {
     for (const [field, label] of FINANCIAL_FIELDS) {
+      const value = year[field];
+      if (value === null) continue;
       fields.push({
         key: `financials.${year.fiscalYear}.${field}`,
         label: `${label}, FY${String(year.fiscalYear).slice(-2)}`,
-        value: year[field],
+        value,
         sourceRef: target.fieldSources?.[field] ?? target.sourceFile,
         confidence: 0.97,
         confirmed: false,
